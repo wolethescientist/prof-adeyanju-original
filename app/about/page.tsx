@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -107,7 +107,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-6xl px-6">
           <Reveal>
             <SectionHeading
-              kicker="Education"
+              kicker="Universities"
               title={
                 <>
                   Trained on <span className="text-primary">three continents</span>
@@ -119,11 +119,22 @@ export default function AboutPage() {
           <div className="mt-12 border-t">
             {education.map((e, i) => (
               <Reveal key={e.years + e.degree} delay={i * 60}>
-                <div className="grid md:grid-cols-[10rem_1fr_auto] gap-2 md:gap-8 items-baseline border-b py-6 px-2">
+                <a
+                  href={e.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group grid md:grid-cols-[10rem_1fr_auto_auto] gap-2 md:gap-8 items-baseline border-b py-6 px-2 cursor-pointer transition-colors duration-200 hover:bg-accent/60"
+                >
                   <p className="text-sm font-bold text-primary tabular-nums">{e.years}</p>
-                  <h3 className="text-lg md:text-xl font-bold">{e.degree}</h3>
+                  <h3 className="text-lg md:text-xl font-bold group-hover:text-primary transition-colors duration-200">
+                    {e.degree}
+                  </h3>
                   <p className="text-sm font-semibold text-muted-foreground">{e.school}</p>
-                </div>
+                  <ArrowUpRight
+                    className="hidden md:block size-4 shrink-0 self-center text-muted-foreground transition-all duration-200 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                    aria-hidden="true"
+                  />
+                </a>
               </Reveal>
             ))}
           </div>

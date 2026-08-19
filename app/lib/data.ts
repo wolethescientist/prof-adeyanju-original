@@ -135,31 +135,44 @@ export const research = [
   },
 ];
 
+/* Degrees earned, plus the chair he still holds at FUOYE. Every row
+   links out to the institution. */
 export const education = [
   {
     years: "1999 — 2004",
     degree: "B.Tech. Computer Engineering, First Class Honours",
     school: "LAUTECH, Ogbomoso, Nigeria",
+    href: "https://www.lautech.edu.ng/",
   },
   {
     years: "2006 — 2007",
     degree: "M.Sc. Computing Information Engineering",
     school: "Robert Gordon University, Aberdeen, UK",
+    href: "https://www.rgu.ac.uk/",
   },
   {
     years: "2007 — 2011",
     degree: "Ph.D. Computing — AI, Machine Learning & NLP",
     school: "Robert Gordon University, Aberdeen, UK",
+    href: "https://www.rgu.ac.uk/",
   },
   {
     years: "2011 — 2012",
     degree: "EPSRC-sponsored Postdoctoral Research, Information Retrieval",
     school: "Robert Gordon University, Aberdeen, UK",
+    href: "https://www.rgu.ac.uk/",
   },
   {
     years: "2014",
     degree: "Empowering the Teachers (ETT) Fellowship",
     school: "Massachusetts Institute of Technology, USA",
+    href: "https://mitettfellows.org/fellow/prof-ibrahim-adeyanju/",
+  },
+  {
+    years: "2012 — present",
+    degree: "Professor of Computer Engineering (Intelligent Systems)",
+    school: "Federal University Oye-Ekiti (FUOYE), Nigeria",
+    href: "https://fuoye.edu.ng/members/ibrahim-adeyanju/",
   },
 ];
 

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Counter from "./components/Counter";
 import Reveal from "./components/Reveal";
-import { Kicker, SectionHeading } from "./components/ui";
+import { SectionHeading } from "./components/ui";
 import { initiatives, marquee, press, research, stats } from "./lib/data";
 
 const explore = [
@@ -30,11 +30,8 @@ export default function Home() {
 
         <div className="relative mx-auto max-w-6xl px-6 pt-40 pb-24 grid md:grid-cols-[1.1fr_0.9fr] gap-14 items-center">
           <div>
-            <div className="animate-fade-up">
-              <Kicker>MD/CEO, Galaxy Backbone Limited</Kicker>
-            </div>
             <h1
-              className="animate-fade-up mt-7 text-5xl md:text-7xl font-bold tracking-tight leading-[1.04]"
+              className="animate-fade-up text-5xl md:text-7xl font-bold tracking-tight leading-[1.04]"
               style={{ animationDelay: "120ms" }}
             >
               Prof. Ibrahim
@@ -97,12 +94,14 @@ export default function Home() {
               />
               <div className="relative rounded-[2rem] overflow-hidden border bg-card shadow-[0_30px_70px_rgba(16,24,40,0.16)]">
                 <Image
-                  src="/images/portrait-md.jpg"
-                  alt="Official portrait of Prof. Ibrahim Adepoju Adeyanju, MD/CEO of Galaxy Backbone Limited"
+                  src="/images/adeyanju-portrait.jpg"
+                  alt="Official portrait of Prof. Ibrahim Adepoju Adeyanju at the Galaxy Backbone headquarters, Abuja"
                   width={416}
-                  height={512}
+                  height={520}
                   priority
-                  className="object-cover"
+                  quality={80}
+                  sizes="(min-width: 768px) 416px, 100vw"
+                  className="w-full object-cover object-top"
                 />
               </div>
               <div className="absolute -bottom-6 -left-8 rounded-2xl border bg-card px-5 py-4 shadow-lg">

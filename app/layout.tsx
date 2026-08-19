@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     title: "Prof. Ibrahim Adepoju Adeyanju",
     description:
       "Professor of Intelligent Systems · MD/CEO, Galaxy Backbone Limited.",
-    images: ["/images/portrait-md.jpg"],
+    images: ["/images/adeyanju-portrait.jpg"],
   },
 };
 
