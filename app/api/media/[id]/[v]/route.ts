@@ -5,14 +5,18 @@ import { media } from "@/db/schema";
 /**
  * Serves an uploaded image out of the database.
  *
- * Callers build the URL with `mediaUrl()`, which appends the file's checksum
- * as `?v=`. That makes each version of a file a distinct URL, so the response
- * can be cached immutably — the browser and the CDN only re-fetch when the
- * image genuinely changes.
+ * The second path segment is the file's checksum. It is not used to look the
+ * image up — the id alone does that — it exists so that every version of a file has
+ * its own URL and the response can be cached forever.
+ *
+ * The checksum sits in the path rather than a query string deliberately: it
+ * lets `images.localPatterns` in next.config.ts pin `search: ""`, so the image
+ * optimizer accepts these URLs without also accepting arbitrary query strings
+ * that could be used to flood the optimizer's cache.
  */
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string; v: string }> }
 ) {
   const { id } = await params;
 

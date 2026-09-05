@@ -2,6 +2,8 @@ import "server-only";
 
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
+import { mediaUrl } from "@/lib/cms/media-url";
+import { SLOTS, type ResolvedImage } from "@/lib/cms/slots";
 import {
   awards,
   educationEntries,
@@ -12,6 +14,7 @@ import {
   marqueeItems,
   pressItems,
   researchAreas,
+  siteImages,
   stats,
   timelineEntries,
 } from "@/db/schema";
@@ -26,11 +29,53 @@ import {
  * lib/cms/registry.ts.
  */
 
-/** URL for an uploaded image. The checksum makes it safely cacheable forever. */
-export function mediaUrl(
-  image: { id: string; checksum: string } | null | undefined
-) {
-  return image ? `/api/media/${image.id}?v=${image.checksum.slice(0, 12)}` : null;
+export { mediaUrl } from "@/lib/cms/media-url";
+
+/**
+ * Resolves every page-image slot to something renderable.
+ *
+ * A slot falls back to the photograph the site shipped with whenever the team
+ * has not chosen one, or has deleted the image it pointed at — so the layouts
+ * can render unconditionally and never end up with a hole.
+ */
+export async function getSiteImages(): Promise<Record<string, ResolvedImage>> {
+  const rows = await db.query.siteImages.findMany({
+    with: {
+      image: {
+        columns: { id: true, checksum: true, alt: true, width: true, height: true },
+      },
+    },
+  });
+
+  const bySlot = new Map(rows.map((row) => [row.slot, row]));
+
+  return Object.fromEntries(
+    SLOTS.map((slot) => {
+      const row = bySlot.get(slot.slot);
+      const image = row?.image;
+      const url = mediaUrl(image);
+
+      if (!image || !url) {
+        return [
+          slot.slot,
+          { ...slot.fallback, caption: row?.caption ?? null },
+        ] as const;
+      }
+
+      return [
+        slot.slot,
+        {
+          src: url,
+          alt: image.alt || slot.fallback.alt,
+          /* Fall back to the design's dimensions if the upload's could not be
+             read, so space is still reserved and nothing shifts. */
+          width: image.width ?? slot.fallback.width,
+          height: image.height ?? slot.fallback.height,
+          caption: row?.caption ?? null,
+        },
+      ] as const;
+    })
+  );
 }
 
 export async function getStats() {

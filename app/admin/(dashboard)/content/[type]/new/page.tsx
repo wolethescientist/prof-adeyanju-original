@@ -13,7 +13,8 @@ export default async function NewEntryPage({
 }) {
   const { type: slug } = await params;
   const type = getContentType(slug);
-  if (!type) notFound();
+  /* Fixed sections have exactly the rows the design defines. */
+  if (!type || type.fixed) notFound();
 
   /* Only load the image library when the section actually uses one. */
   const needsImages = type.fields.some((field) => field.type === "image");

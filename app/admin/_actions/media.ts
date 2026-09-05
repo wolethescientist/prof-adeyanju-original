@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { media } from "@/db/schema";
 import { requireUser } from "@/lib/auth/session";
 import { imageSize } from "@/lib/cms/image-size";
+import { optimizeImage } from "@/lib/cms/optimize";
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from "@/lib/cms/constants";
 
 /** Formats the browser accepts and we know how to measure. */
@@ -41,7 +42,13 @@ export async function uploadMedia(
     };
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const original = Buffer.from(await file.arrayBuffer());
+
+  /* Resize and re-encode before storing — see lib/cms/optimize.ts. The
+     checksum is taken from the processed bytes, since those are what we serve
+     and what the cache-busting URL has to track. */
+  const optimized = await optimizeImage(original, file.type);
+  const buffer = optimized.data;
   const checksum = createHash("sha256").update(buffer).digest("hex");
 
   /* The same file uploaded twice should not become two rows. */
@@ -54,14 +61,16 @@ export async function uploadMedia(
     return { error: "That image is already in the library." };
   }
 
-  const size = imageSize(buffer, file.type);
+  /* sharp reports the dimensions it produced; the header parser is the
+     fallback for anything it could not process. */
+  const fallbackSize = imageSize(buffer, optimized.mimeType);
 
   await db.insert(media).values({
     filename: file.name.slice(0, 200),
-    mimeType: file.type,
+    mimeType: optimized.mimeType,
     byteSize: buffer.byteLength,
-    width: size?.width ?? null,
-    height: size?.height ?? null,
+    width: optimized.width ?? fallbackSize?.width ?? null,
+    height: optimized.height ?? fallbackSize?.height ?? null,
     alt: alt.slice(0, 500),
     checksum,
     data: buffer,
@@ -69,7 +78,12 @@ export async function uploadMedia(
   });
 
   revalidatePath("/admin/media");
-  return { success: `“${file.name}” uploaded.` };
+
+  const saved =
+    optimized.savedBytes > 0
+      ? ` Optimised — ${(optimized.savedBytes / 1024 / 1024).toFixed(1)}MB smaller.`
+      : "";
+  return { success: `“${file.name}” uploaded.${saved}` };
 }
 
 export async function updateMediaAlt(id: string, formData: FormData) {

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import Counter from "@/app/components/Counter";
 import Reveal from "@/app/components/Reveal";
 import { PageHeader, SectionHeading } from "@/app/components/ui";
-import { getImpactStats, getInitiatives } from "@/app/lib/content";
+import { getImpactStats, getInitiatives, getSiteImages } from "@/app/lib/content";
 
 export const metadata: Metadata = {
   title: "Impact — Prof. Ibrahim Adepoju Adeyanju",
@@ -17,10 +17,13 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function ImpactPage() {
-  const [initiatives, keyNumbers] = await Promise.all([
+  const [initiatives, keyNumbers, images] = await Promise.all([
     getInitiatives(),
     getImpactStats(),
+    getSiteImages(),
   ]);
+
+  const team = images["team-photo"];
 
   return (
     <>
@@ -95,10 +98,11 @@ export default async function ImpactPage() {
           <Reveal>
             <div className="relative rounded-[2rem] overflow-hidden border shadow-[0_25px_60px_rgba(16,24,40,0.12)]">
               <Image
-                src="/images/team-gbb.jpeg"
-                alt="Prof. Ibrahim Adeyanju with Galaxy Backbone's top management team"
-                width={1600}
-                height={900}
+                src={team.src}
+                alt={team.alt}
+                width={team.width}
+                height={team.height}
+                sizes="(min-width: 1024px) 1024px, 100vw"
                 className="w-full object-cover"
               />
               <div
@@ -106,7 +110,8 @@ export default async function ImpactPage() {
                 aria-hidden="true"
               />
               <p className="absolute bottom-5 left-6 right-6 text-sm font-semibold text-white">
-                Prof. Adeyanju with Galaxy Backbone&apos;s executive management team.
+                {team.caption ??
+                  "Prof. Adeyanju with Galaxy Backbone's executive management team."}
               </p>
             </div>
           </Reveal>

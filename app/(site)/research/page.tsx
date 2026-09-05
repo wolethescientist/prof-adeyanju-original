@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import Counter from "@/app/components/Counter";
 import Reveal from "@/app/components/Reveal";
 import { PageHeader, SectionHeading } from "@/app/components/ui";
-import { getResearchAreas } from "@/app/lib/content";
+import { getResearchAreas, getSiteImages } from "@/app/lib/content";
 
 export const metadata: Metadata = {
   title: "Research — Prof. Ibrahim Adepoju Adeyanju",
@@ -16,7 +16,12 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function ResearchPage() {
-  const research = await getResearchAreas();
+  const [research, images] = await Promise.all([
+    getResearchAreas(),
+    getSiteImages(),
+  ]);
+
+  const photo = images["research-portrait"];
 
   return (
     <>
@@ -64,14 +69,16 @@ export default async function ResearchPage() {
                 aria-hidden="true"
               />
               <Image
-                src="/images/portrait-2.jpg"
-                alt="Dr. Ibrahim Adeyanju at his PhD graduation, Robert Gordon University"
-                width={700}
-                height={400}
+                src={photo.src}
+                alt={photo.alt}
+                width={photo.width}
+                height={photo.height}
+                sizes="(min-width: 768px) 50vw, 100vw"
                 className="relative rounded-[1.6rem] w-full object-cover shadow-[0_25px_50px_rgba(16,24,40,0.14)]"
               />
               <figcaption className="relative mt-4 text-center text-xs font-semibold text-muted-foreground">
-                PhD in Computing — Robert Gordon University, Aberdeen (2011)
+                {photo.caption ??
+                  "PhD in Computing — Robert Gordon University, Aberdeen (2011)"}
               </figcaption>
             </figure>
           </Reveal>

@@ -135,22 +135,22 @@ async function main() {
   }
 
   /* --- media --------------------------------------------------------- */
-  await seedImage(
+  const heroId = await seedImage(
     "adeyanju-portrait.jpg",
     "Official portrait of Prof. Ibrahim Adepoju Adeyanju",
     adminId
   );
-  await seedImage(
+  const teamId = await seedImage(
     "team-gbb.jpeg",
     "Prof. Ibrahim Adeyanju with Galaxy Backbone's executive management team",
     adminId
   );
-  await seedImage(
+  const mitId = await seedImage(
     "portrait-mit.png",
     "Prof. Ibrahim Adeyanju as an MIT Empowering the Teachers fellow",
     adminId
   );
-  await seedImage(
+  const phdId = await seedImage(
     "portrait-2.jpg",
     "Dr. Ibrahim Adeyanju at his PhD graduation, Robert Gordon University",
     adminId
@@ -160,6 +160,35 @@ async function main() {
     "Prof. Ibrahim Adeyanju, Managing Director of Galaxy Backbone",
     adminId
   );
+
+  /* --- page image slots ----------------------------------------------- */
+  /* One row per place the design has a photograph, pointing at the picture
+     the site already shipped with. The team swaps these in the CMS. */
+  await seedTable("page images", schema.siteImages, [
+    {
+      slot: "hero-portrait",
+      label: "Home page — main portrait",
+      imageId: heroId,
+    },
+    {
+      slot: "profile-portrait",
+      label: "Home page — profile photo",
+      caption: "MIT Empowering the Teachers fellow — Cambridge, 2014",
+      imageId: mitId,
+    },
+    {
+      slot: "team-photo",
+      label: "Team photograph",
+      caption: "With Galaxy Backbone's executive management team, Abuja.",
+      imageId: teamId,
+    },
+    {
+      slot: "research-portrait",
+      label: "Research page photo",
+      caption: "PhD in Computing — Robert Gordon University, Aberdeen (2011)",
+      imageId: phdId,
+    },
+  ]);
 
   /* --- content ------------------------------------------------------- */
   await seedTable("stats", schema.stats, [

@@ -21,6 +21,7 @@ export default function RowActions({
   isFirst,
   isLast,
   what,
+  fixed = false,
   onMoveUp,
   onMoveDown,
   onToggle,
@@ -31,6 +32,8 @@ export default function RowActions({
   isFirst: boolean;
   isLast: boolean;
   what: string;
+  /** Fixed sections can only be edited — never added to, reordered or removed. */
+  fixed?: boolean;
   onMoveUp: () => Promise<void>;
   onMoveDown: () => Promise<void>;
   onToggle: () => Promise<void>;
@@ -43,6 +46,23 @@ export default function RowActions({
       await action();
     });
   };
+
+  const editButton = (
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      nativeButton={false}
+      aria-label={`Edit ${what}`}
+      className="text-muted-foreground"
+      render={<Link href={editHref} />}
+    >
+      <Pencil />
+    </Button>
+  );
+
+  if (fixed) {
+    return <div className="flex items-center gap-1 shrink-0">{editButton}</div>;
+  }
 
   return (
     <div
@@ -83,16 +103,7 @@ export default function RowActions({
         {published ? <Eye /> : <EyeOff />}
       </Button>
 
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        nativeButton={false}
-        aria-label={`Edit ${what}`}
-        className="text-muted-foreground"
-        render={<Link href={editHref} />}
-      >
-        <Pencil />
-      </Button>
+      {editButton}
 
       <ConfirmDelete action={onDelete} what={what} compact />
     </div>

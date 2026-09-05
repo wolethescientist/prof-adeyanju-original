@@ -11,6 +11,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ICON_NAMES } from "@/app/lib/icons";
 import type { Field } from "@/lib/cms/registry";
+import { mediaUrl } from "@/lib/cms/media-url";
 import type { MediaItem } from "@/lib/cms/media";
 import type { FormState } from "../_actions/content";
 
@@ -71,7 +72,7 @@ function ImageField({
       {chosen && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={`/api/media/${chosen.id}?v=${chosen.checksum.slice(0, 12)}`}
+          src={mediaUrl(chosen)!}
           alt={chosen.alt}
           className="mt-1 h-32 w-auto rounded-lg border object-cover"
         />

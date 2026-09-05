@@ -38,6 +38,17 @@ function resolve(slug: string) {
   return type;
 }
 
+/**
+ * Sections whose rows are dictated by the page designs accept edits only.
+ * The screens already hide these controls; this is the check that matters,
+ * since a server action is a public endpoint.
+ */
+function refuseIfFixed(type: ContentType) {
+  if (type.fixed) {
+    throw new Error(`“${type.label}” has a fixed set of entries that cannot be added to or removed.`);
+  }
+}
+
 /** Refresh the public pages this section feeds, plus the admin list itself. */
 function refresh(type: ContentType) {
   for (const path of type.revalidates) revalidatePath(path);
@@ -81,6 +92,7 @@ export async function createEntry(
 ): Promise<FormState> {
   await requireUser();
   const type = resolve(slug);
+  refuseIfFixed(type);
 
   const result = readForm(type, formData);
   if (!result.ok) return { fieldErrors: result.fieldErrors };
@@ -122,6 +134,7 @@ export async function updateEntry(
 export async function deleteEntry(slug: string, id: string) {
   await requireUser();
   const type = resolve(slug);
+  refuseIfFixed(type);
 
   await db.delete(type.table as AnyTable).where(eq(cols(type).id as never, id));
 
@@ -152,6 +165,7 @@ export async function togglePublished(slug: string, id: string) {
 export async function moveEntry(slug: string, id: string, direction: "up" | "down") {
   await requireUser();
   const type = resolve(slug);
+  refuseIfFixed(type);
   const table = type.table as AnyTable;
   const c = cols(type);
 

@@ -40,15 +40,17 @@ export default async function ContentListPage({
               {type.description}
             </p>
           </div>
-          <Button
-            size="lg"
-            className="h-10 font-bold shrink-0"
-            nativeButton={false}
-            render={<Link href={`/admin/content/${slug}/new`} />}
-          >
-            <Plus data-icon="inline-start" />
-            Add {type.singular.toLowerCase()}
-          </Button>
+          {!type.fixed && (
+            <Button
+              size="lg"
+              className="h-10 font-bold shrink-0"
+              nativeButton={false}
+              render={<Link href={`/admin/content/${slug}/new`} />}
+            >
+              <Plus data-icon="inline-start" />
+              Add {type.singular.toLowerCase()}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -79,9 +81,11 @@ export default async function ContentListPage({
                 key={row.id}
                 className="flex items-center gap-4 px-4 py-3.5 hover:bg-accent/40 transition-colors duration-150"
               >
-                <span className="w-6 shrink-0 text-xs font-bold tabular-nums text-muted-foreground/70">
-                  {index + 1}
-                </span>
+                {!type.fixed && (
+                  <span className="w-6 shrink-0 text-xs font-bold tabular-nums text-muted-foreground/70">
+                    {index + 1}
+                  </span>
+                )}
 
                 <div className="grow min-w-0">
                   <p className="text-sm font-semibold truncate">{title}</p>
@@ -99,6 +103,7 @@ export default async function ContentListPage({
                 )}
 
                 <RowActions
+                  fixed={type.fixed}
                   what={type.singular.toLowerCase()}
                   editHref={`/admin/content/${slug}/${row.id}`}
                   published={row.published}

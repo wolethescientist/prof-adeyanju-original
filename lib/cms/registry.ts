@@ -9,6 +9,7 @@ import {
   marqueeItems,
   pressItems,
   researchAreas,
+  siteImages,
   stats,
   timelineEntries,
 } from "@/db/schema";
@@ -48,7 +49,7 @@ export type ContentType = {
   singular: string;
   description: string;
   /* Grouping for the sidebar/dropdown. */
-  group: "Achievements" | "Profile" | "Home page";
+  group: "Achievements" | "Profile" | "Home page" | "Page images";
   table: TableFor;
   fields: Field[];
   /** Field shown as the headline in the list view. */
@@ -57,6 +58,11 @@ export type ContentType = {
   subtitleField?: string;
   /** Public routes to revalidate after any change here. */
   revalidates: string[];
+  /**
+   * A fixed set of rows the team edits but cannot add to, reorder or delete —
+   * used where the design dictates exactly which slots exist.
+   */
+  fixed?: boolean;
 };
 
 /* The tables all share the columns the generic screens rely on (id, position,
@@ -71,6 +77,7 @@ type TableFor =
   | typeof honours
   | typeof stats
   | typeof impactStats
+  | typeof siteImages
   | typeof glanceItems
   | typeof marqueeItems;
 
@@ -427,6 +434,33 @@ export const CONTENT_TYPES: ContentType[] = [
         type: "text",
         required: true,
         maxLength: 300,
+      },
+    ],
+  },
+  {
+    slug: "page-images",
+    label: "Page images",
+    singular: "Image slot",
+    description:
+      "The photographs built into the page designs. Choose which uploaded image fills each place — you cannot add or remove slots.",
+    group: "Page images",
+    table: siteImages,
+    titleField: "label",
+    fixed: true,
+    revalidates: ["/", "/impact", "/research"],
+    fields: [
+      {
+        name: "imageId",
+        label: "Image",
+        type: "image",
+        help: "Leave empty to use the photograph the site originally shipped with.",
+      },
+      {
+        name: "caption",
+        label: "Caption",
+        type: "text",
+        maxLength: 300,
+        help: "Optional. Only shown where the design has a caption.",
       },
     ],
   },

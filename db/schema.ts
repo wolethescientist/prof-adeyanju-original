@@ -95,6 +95,23 @@ export const stats = pgTable("stats", {
   label: text("label").notNull(),
 });
 
+/**
+ * The fixed image slots in the page designs — the hero portrait, the team
+ * photo and so on.
+ *
+ * Unlike the other content tables these rows are not created or deleted by the
+ * team: the design has exactly these places, and each row just records which
+ * uploaded image currently fills one. `slot` is the stable key the pages look
+ * themselves up by.
+ */
+export const siteImages = pgTable("site_images", {
+  ...contentColumns,
+  slot: text("slot").notNull().unique(),
+  label: text("label").notNull(),
+  caption: text("caption"),
+  imageId: uuid("image_id").references(() => media.id, { onDelete: "set null" }),
+});
+
 /** The four counters across the top of the Impact page. */
 export const impactStats = pgTable("impact_stats", {
   ...contentColumns,
@@ -199,6 +216,10 @@ export const initiativeRelations = relations(initiatives, ({ one }) => ({
 
 export const awardRelations = relations(awards, ({ one }) => ({
   image: one(media, { fields: [awards.imageId], references: [media.id] }),
+}));
+
+export const siteImageRelations = relations(siteImages, ({ one }) => ({
+  image: one(media, { fields: [siteImages.imageId], references: [media.id] }),
 }));
 
 export const pressRelations = relations(pressItems, ({ one }) => ({

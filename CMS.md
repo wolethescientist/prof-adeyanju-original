@@ -24,8 +24,15 @@ the **section dropdown** at the top of each screen — lists them in three group
 | Profile | At a glance | `/about` |
 | Home page | Headline numbers | home |
 | Home page | Scrolling keywords | home |
+| Page images | Page images | home, `/impact`, `/research` |
 
 Plus an **Images** library, and **Team** (administrators only).
+
+**Page images** is a fixed list — the photographs built into the page designs
+(the hero portrait, the team photograph, and so on). The team chooses which
+uploaded image fills each place, but cannot add or remove slots, because the
+layouts define them. Leaving a slot empty falls back to the photograph the site
+originally shipped with, so a page can never end up with a hole in it.
 
 Every entry can be reordered (▲ ▼), hidden from the public site without being
 deleted (the eye icon), edited, or removed. Awards, press items and initiatives
@@ -118,7 +125,16 @@ Postgres**, so a database backup is a complete backup of the site's content.
   with the file's checksum in the URL, so they cache permanently yet update the
   moment the file changes. Storing them in the database is what lets the same
   code run on Vercel's read-only filesystem and on your own server without a
-  separate blob service. Limit 8MB per image.
+  separate blob service. Uploads are capped at 8MB, and each one is resized to
+  fit within 2560px, re-encoded and stripped of camera metadata (which also
+  removes GPS coordinates from phone photos) before it is stored — a 4.4MB
+  photo straight off a phone lands in the database at about 1.2MB. `next/image`
+  then resizes and re-formats again on delivery.
+
+  The cache-busting checksum sits in the URL path rather than a query string so
+  that `images.localPatterns` in `next.config.ts` can pin `search: ""`, which
+  stops anyone flooding the image optimizer's cache with invented query
+  strings.
 - **Sessions** — server-side rows in the `sessions` table; the cookie carries
   only a signed session id, so revoking access takes effect on the next request.
   Passwords are hashed with bcrypt (12 rounds). `proxy.ts` (Next 16's renamed

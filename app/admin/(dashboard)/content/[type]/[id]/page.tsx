@@ -52,12 +52,14 @@ export default async function EditEntryPage({
         submitLabel="Save changes"
       />
 
-      <div className="border-t pt-6">
-        <ConfirmDelete
-          action={deleteEntry.bind(null, slug, id)}
-          what={`this ${type.singular.toLowerCase()}`}
-        />
-      </div>
+      {!type.fixed && (
+        <div className="border-t pt-6">
+          <ConfirmDelete
+            action={deleteEntry.bind(null, slug, id)}
+            what={`this ${type.singular.toLowerCase()}`}
+          />
+        </div>
+      )}
     </div>
   );
 }

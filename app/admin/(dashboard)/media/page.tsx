@@ -1,4 +1,5 @@
 import { listMedia } from "@/lib/cms/media";
+import { mediaUrl } from "@/lib/cms/media-url";
 import UploadForm from "@/app/admin/_components/UploadForm";
 import ConfirmDelete from "@/app/admin/_components/ConfirmDelete";
 import { deleteMedia } from "@/app/admin/_actions/media";
@@ -46,7 +47,7 @@ export default async function MediaPage() {
                     uploads, not layout-critical page imagery. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`/api/media/${image.id}?v=${image.checksum.slice(0, 12)}`}
+                  src={mediaUrl(image)!}
                   alt={image.alt}
                   className="h-40 w-full object-cover bg-muted"
                   loading="lazy"

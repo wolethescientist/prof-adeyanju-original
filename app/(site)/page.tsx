@@ -11,6 +11,7 @@ import {
   getMarquee,
   getPress,
   getResearchAreas,
+  getSiteImages,
   getStats,
 } from "@/app/lib/content";
 
@@ -28,13 +29,18 @@ const explore = [
 export const revalidate = 300;
 
 export default async function Home() {
-  const [stats, marquee, initiatives, research, press] = await Promise.all([
+  const [stats, marquee, initiatives, research, press, images] = await Promise.all([
     getStats(),
     getMarquee(),
     getInitiatives(),
     getResearchAreas(),
     getPress(),
+    getSiteImages(),
   ]);
+
+  const hero = images["hero-portrait"];
+  const profile = images["profile-portrait"];
+  const team = images["team-photo"];
 
   return (
     <>
@@ -112,12 +118,11 @@ export default async function Home() {
               />
               <div className="relative rounded-[2rem] overflow-hidden border bg-card shadow-[0_30px_70px_rgba(16,24,40,0.16)]">
                 <Image
-                  src="/images/adeyanju-portrait.jpg"
-                  alt="Official portrait of Prof. Ibrahim Adepoju Adeyanju at the Galaxy Backbone headquarters, Abuja"
-                  width={416}
-                  height={520}
+                  src={hero.src}
+                  alt={hero.alt}
+                  width={hero.width}
+                  height={hero.height}
                   priority
-                  quality={80}
                   sizes="(min-width: 768px) 416px, 100vw"
                   className="w-full object-cover object-top"
                 />
@@ -238,14 +243,15 @@ export default async function Home() {
                 aria-hidden="true"
               />
               <Image
-                src="/images/portrait-mit.png"
-                alt="Prof. Ibrahim Adeyanju as an MIT Empowering the Teachers fellow"
-                width={300}
-                height={448}
+                src={profile.src}
+                alt={profile.alt}
+                width={profile.width}
+                height={profile.height}
+                sizes="(min-width: 768px) 300px, 80vw"
                 className="relative rounded-[1.6rem] w-full object-cover shadow-[0_25px_50px_rgba(16,24,40,0.15)]"
               />
               <figcaption className="mt-4 text-center text-xs font-semibold text-muted-foreground">
-                MIT Empowering the Teachers fellow — Cambridge, 2014
+                {profile.caption ?? "MIT Empowering the Teachers fellow — Cambridge, 2014"}
               </figcaption>
             </figure>
           </Reveal>
@@ -276,10 +282,11 @@ export default async function Home() {
             <Reveal>
               <div className="relative rounded-[2rem] overflow-hidden border shadow-[0_25px_60px_rgba(16,24,40,0.14)]">
                 <Image
-                  src="/images/team-gbb.jpeg"
-                  alt="Prof. Ibrahim Adeyanju with Galaxy Backbone's executive management team"
-                  width={960}
-                  height={641}
+                  src={team.src}
+                  alt={team.alt}
+                  width={team.width}
+                  height={team.height}
+                  sizes="(min-width: 768px) 50vw, 100vw"
                   className="w-full object-cover"
                 />
                 <div
@@ -287,7 +294,7 @@ export default async function Home() {
                   aria-hidden="true"
                 />
                 <p className="absolute bottom-5 left-6 right-6 text-sm font-semibold text-white">
-                  With Galaxy Backbone&apos;s executive management team, Abuja.
+                  {team.caption ?? "With Galaxy Backbone's executive management team, Abuja."}
                 </p>
               </div>
             </Reveal>
