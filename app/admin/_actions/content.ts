@@ -75,11 +75,21 @@ function readForm(type: ContentType, formData: FormData) {
     return { ok: false as const, fieldErrors };
   }
 
-  /* Empty optional fields come through as "" — store NULL so the public pages
-     can rely on a plain falsy check. */
+  /* An empty optional field arrives as "". Most columns are nullable, and NULL
+     is the tidier thing to store — the public pages can then rely on a plain
+     falsy check. But some optional fields map to NOT NULL columns that default
+     to an empty string (a counter's suffix, for instance), and writing NULL to
+     one of those fails the constraint. Ask the column which it is rather than
+     maintaining a list by hand, so a future field cannot reintroduce this. */
+  const columns = type.table as unknown as Record<
+    string,
+    { notNull?: boolean } | undefined
+  >;
   const values: Record<string, unknown> = { ...parsed.data };
   for (const field of type.fields) {
-    if (values[field.name] === "" && !field.required) values[field.name] = null;
+    if (values[field.name] === "" && !field.required) {
+      values[field.name] = columns[field.name]?.notNull ? "" : null;
+    }
   }
 
   return { ok: true as const, values };
