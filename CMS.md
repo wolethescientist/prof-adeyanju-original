@@ -79,17 +79,47 @@ The app talks to Postgres over a standard connection, so **moving between Neon
 and the Docker container is a change of `DATABASE_URL` and nothing else** — no
 code edits, no second driver.
 
+### The SQL files
+
+| File | What it is |
+|---|---|
+| `db/migrations/0000_initial_cms_schema.sql` | Creates all 15 tables. Run this first. |
+| `db/content-snapshot.sql` | Every content row plus the uploaded images. Run second. |
+
+`content-snapshot.sql` deliberately excludes `users` and `sessions`, so no
+password hash lives in a file — create the first account with `npm run cms:user`
+after restoring.
+
+You can paste both into Neon's SQL Editor, or pipe them in:
+
+```bash
+psql '<neon pooled url>' -v ON_ERROR_STOP=1 -f db/migrations/0000_initial_cms_schema.sql
+psql '<neon pooled url>' -v ON_ERROR_STOP=1 -f db/content-snapshot.sql
+```
+
+`npm run db:push` does the same thing from the schema directly, if you'd rather
+not handle SQL by hand.
+
+> **The database must exist before the first deploy.** The public pages are
+> statically rendered from their content at build time, so `npm run build`
+> queries the database — against an empty or unreachable one it fails. Order is:
+> create the Neon database → run the two files → set the environment variables →
+> deploy.
+
 ### Vercel preview (Neon)
 
 1. Create a Neon project and copy the **pooled** connection string (the host
    contains `-pooler`).
 2. In Vercel → Settings → Environment Variables, set `DATABASE_URL` and
    `AUTH_SECRET`.
-3. Deploy, then from your machine, pointed at the same database:
+3. Load the database **before** deploying — see [The SQL files](#the-sql-files)
+   — then create the first account:
    ```bash
-   DATABASE_URL='<neon pooled url>' npm run db:push
-   DATABASE_URL='<neon pooled url>' ADMIN_EMAIL=... ADMIN_PASSWORD=... npm run db:seed
+   DATABASE_URL='<neon pooled url>' npm run cms:user -- \
+     --email=test@gbb.gov.ng --name='Galaxy Backbone Media Team' \
+     --password='<a strong one>' --role=admin
    ```
+4. Deploy.
 
 ### Self-hosted (Docker Postgres)
 
