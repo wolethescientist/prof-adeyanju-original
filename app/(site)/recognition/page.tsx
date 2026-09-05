@@ -49,7 +49,14 @@ export default async function RecognitionPage() {
                     className="size-1.5 shrink-0 rounded-full bg-primary translate-y-[-2px]"
                     aria-hidden="true"
                   />
-                  {h.text}
+                  <span>
+                    {h.text}
+                    {h.description && (
+                      <span className="mt-1 block text-sm font-medium text-muted-foreground leading-relaxed">
+                        {h.description}
+                      </span>
+                    )}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -121,9 +128,16 @@ export default async function RecognitionPage() {
                   >
                     {p.outlet}
                   </Badge>
-                  <p className="grow text-base md:text-lg font-semibold leading-snug group-hover:text-primary transition-colors duration-200">
-                    {p.title}
-                  </p>
+                  <span className="grow">
+                    <span className="block text-base md:text-lg font-semibold leading-snug group-hover:text-primary transition-colors duration-200">
+                      {p.title}
+                    </span>
+                    {p.description && (
+                      <span className="mt-1 block text-sm font-medium text-muted-foreground leading-relaxed">
+                        {p.description}
+                      </span>
+                    )}
+                  </span>
                   <ArrowUpRight
                     className="size-5 shrink-0 text-muted-foreground transition-all duration-200 group-hover:text-primary group-hover:translate-x-1 group-hover:-translate-y-1"
                     aria-hidden="true"

@@ -38,6 +38,12 @@ Every entry can be reordered (▲ ▼), hidden from the public site without bein
 deleted (the eye icon), edited, or removed. Awards, press items and initiatives
 can carry an uploaded image.
 
+Every section also has an optional **Description**. For press coverage,
+education and personal honours it appears on the website beneath the entry;
+for the headline numbers, impact numbers, at-a-glance rows and scrolling
+keywords the design has nowhere to show it, so it serves as a note for the
+team. The field's help text says which is which.
+
 ### Roles
 
 - **Editor** — adds and edits all content and images.
@@ -83,8 +89,9 @@ code edits, no second driver.
 
 | File | What it is |
 |---|---|
-| `db/migrations/0000_initial_cms_schema.sql` | Creates all 15 tables. Run this first. |
-| `db/content-snapshot.sql` | Every content row plus the uploaded images. Run second. |
+| `db/migrations/0000_initial_cms_schema.sql` | Creates all 15 tables. Run first. |
+| `db/migrations/0001_add_description_fields.sql` | Adds the optional Description column. Run second. |
+| `db/content-snapshot.sql` | Every content row plus the uploaded images. Run last. |
 
 `content-snapshot.sql` deliberately excludes `users` and `sessions`, so no
 password hash lives in a file — create the first account with `npm run cms:user`

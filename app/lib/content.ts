@@ -156,6 +156,7 @@ export async function getEducation() {
       degree: educationEntries.degree,
       school: educationEntries.school,
       href: educationEntries.href,
+      description: educationEntries.description,
     })
     .from(educationEntries)
     .where(eq(educationEntries.published, true))
@@ -164,7 +165,11 @@ export async function getEducation() {
 
 export async function getHonours() {
   return db
-    .select({ id: honours.id, text: honours.text })
+    .select({
+      id: honours.id,
+      text: honours.text,
+      description: honours.description,
+    })
     .from(honours)
     .where(eq(honours.published, true))
     .orderBy(asc(honours.position));

@@ -93,6 +93,7 @@ export const stats = pgTable("stats", {
   value: integer("value").notNull(),
   suffix: text("suffix").notNull().default(""),
   label: text("label").notNull(),
+  description: text("description"),
 });
 
 /**
@@ -118,12 +119,14 @@ export const impactStats = pgTable("impact_stats", {
   value: integer("value").notNull(),
   suffix: text("suffix").notNull().default(""),
   label: text("label").notNull(),
+  description: text("description"),
 });
 
 /** The scrolling keyword strip under the hero. */
 export const marqueeItems = pgTable("marquee_items", {
   ...contentColumns,
   text: text("text").notNull(),
+  description: text("description"),
 });
 
 /** Career chapters on /journey. */
@@ -160,12 +163,14 @@ export const educationEntries = pgTable("education_entries", {
   degree: text("degree").notNull(),
   school: text("school").notNull(),
   href: text("href"),
+  description: text("description"),
 });
 
 /** Personal honours on /recognition. */
 export const honours = pgTable("honours", {
   ...contentColumns,
   text: text("text").notNull(),
+  description: text("description"),
 });
 
 /**
@@ -187,6 +192,7 @@ export const pressItems = pgTable("press_items", {
   outlet: text("outlet").notNull(),
   title: text("title").notNull(),
   href: text("href").notNull(),
+  description: text("description"),
   imageId: uuid("image_id").references(() => media.id, { onDelete: "set null" }),
 });
 
@@ -195,6 +201,7 @@ export const glanceItems = pgTable("glance_items", {
   ...contentColumns,
   label: text("label").notNull(),
   value: text("value").notNull(),
+  description: text("description"),
 });
 
 /* --------------------------------------------------------------- relations */
