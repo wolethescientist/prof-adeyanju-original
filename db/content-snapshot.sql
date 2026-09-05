@@ -6,10 +6,9 @@
 -- in a file.
 --
 --
--- PostgreSQL database dumpbut icve ra the 
+-- PostgreSQL database dump
 --
 
-\restrict WTv0V3KWGFc7ytcRn8oTyCfffHtahc4YOquG8PewlfgPfTGWTxj40yZI02zTPVm
 
 -- Dumped from database version 17.11
 -- Dumped by pg_dump version 17.11
@@ -179,5 +178,4 @@ INSERT INTO public.timeline_entries (id, "position", published, created_at, upda
 -- PostgreSQL database dump complete
 --
 
-\unrestrict WTv0V3KWGFc7ytcRn8oTyCfffHtahc4YOquG8PewlfgPfTGWTxj40yZI02zTPVm
 
