@@ -13,6 +13,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx db/seed.mts",
+    "db:check": "tsx db/check.mts",
     "cms:user": "tsx db/create-user.mts"
   },
   "dependencies": {
