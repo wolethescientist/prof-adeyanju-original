@@ -553,10 +553,17 @@ export function schemaFor(type: ContentType) {
 
     switch (field.type) {
       case "number": {
+        /* Upper bound is the largest value a Postgres integer column holds.
+           Without it, a longer number passes validation and then fails in the
+           database as a 500 rather than as a message on the field. */
         rule = z.coerce
           .number({ error: `${field.label} must be a number.` })
           .int(`${field.label} must be a whole number.`)
-          .min(0, `${field.label} cannot be negative.`);
+          .min(0, `${field.label} cannot be negative.`)
+          .max(
+            2_147_483_647,
+            `${field.label} is too large — the maximum is 2,147,483,647.`
+          );
         break;
       }
       case "url": {

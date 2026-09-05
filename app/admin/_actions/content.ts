@@ -17,6 +17,41 @@ import { getContentType, schemaFor, type ContentType } from "@/lib/cms/registry"
 
 export type FormState = { error?: string; fieldErrors?: Record<string, string> };
 
+/**
+ * Turns a database error into something an editor can act on.
+ *
+ * Validation catches the common cases before a write is attempted, but if
+ * something still gets through it should come back as a message on the form —
+ * not as a 500 that loses their work and says nothing.
+ */
+function describeDbError(error: unknown): string {
+  let current: unknown = error;
+  let code: string | undefined;
+  for (let depth = 0; depth < 5 && current; depth++) {
+    const c = (current as { code?: string }).code;
+    if (typeof c === "string") {
+      code = c;
+      break;
+    }
+    current = (current as { cause?: unknown }).cause;
+  }
+
+  switch (code) {
+    case "22003":
+      return "One of the numbers is too large for the database to store. The maximum is 2,147,483,647.";
+    case "22001":
+      return "One of the fields is longer than the space available. Try shortening it.";
+    case "23502":
+      return "A required field was left empty.";
+    case "23505":
+      return "An entry with those details already exists.";
+    case "23503":
+      return "That refers to something that no longer exists — try reloading the page.";
+    default:
+      return "The change could not be saved. Please try again, and tell your developer if it keeps happening.";
+  }
+}
+
 /* The registry's table union is heterogeneous; after `schemaFor` has validated
    the payload we address the shared columns (id, position, published) through
    this narrow view rather than fighting the union in every call. */
@@ -107,14 +142,19 @@ export async function createEntry(
   const result = readForm(type, formData);
   if (!result.ok) return { fieldErrors: result.fieldErrors };
 
-  /* New rows go to the bottom of the section. */
-  const [{ highest }] = await db
-    .select({ highest: max(cols(type).position as never) })
-    .from(type.table as AnyTable);
+  try {
+    /* New rows go to the bottom of the section. */
+    const [{ highest }] = await db
+      .select({ highest: max(cols(type).position as never) })
+      .from(type.table as AnyTable);
 
-  await db
-    .insert(type.table as AnyTable)
-    .values({ ...result.values, position: ((highest as number | null) ?? -1) + 1 });
+    await db
+      .insert(type.table as AnyTable)
+      .values({ ...result.values, position: ((highest as number | null) ?? -1) + 1 });
+  } catch (error) {
+    console.error(`[cms] failed to create ${type.slug}:`, error);
+    return { error: describeDbError(error) };
+  }
 
   refresh(type);
   redirect(`/admin/content/${slug}?saved=1`);
@@ -132,10 +172,15 @@ export async function updateEntry(
   const result = readForm(type, formData);
   if (!result.ok) return { fieldErrors: result.fieldErrors };
 
-  await db
-    .update(type.table as AnyTable)
-    .set({ ...result.values, updatedAt: new Date() })
-    .where(eq(cols(type).id as never, id));
+  try {
+    await db
+      .update(type.table as AnyTable)
+      .set({ ...result.values, updatedAt: new Date() })
+      .where(eq(cols(type).id as never, id));
+  } catch (error) {
+    console.error(`[cms] failed to update ${type.slug}/${id}:`, error);
+    return { error: describeDbError(error) };
+  }
 
   refresh(type);
   redirect(`/admin/content/${slug}?saved=1`);
