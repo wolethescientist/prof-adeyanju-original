@@ -1,6 +1,8 @@
 # Knowledge Base — Prof. Ibrahim Adepoju Adeyanju
 
-Compiled July 2026 from public sources. Feeds the content in `app/page.tsx`.
+Compiled July 2026 from public sources. This was the original source for the
+site's copy; it now lives in the database and is edited through the CMS — see
+`CMS.md`. Kept as a record of where the facts came from.
 
 ## Identity
 - **Full name:** Ibrahim Adepoju Adeyanju (official GBB profile; some outlets misspell "Adebayo")

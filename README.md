@@ -1,17 +1,17 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+The site's content is managed through a built-in CMS at `/admin` — see
+**[CMS.md](./CMS.md)** for setup, deployment and how the media team uses it.
+
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+cp .env.example .env.local   # fill in DATABASE_URL and AUTH_SECRET
+npm install
+npm run db:up                # Postgres in Docker
+npm run db:push              # create tables
+npm run db:seed              # load content + first admin account
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.

@@ -2,10 +2,10 @@ import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import Counter from "../components/Counter";
-import Reveal from "../components/Reveal";
-import { PageHeader, SectionHeading } from "../components/ui";
-import { research } from "../lib/data";
+import Counter from "@/app/components/Counter";
+import Reveal from "@/app/components/Reveal";
+import { PageHeader, SectionHeading } from "@/app/components/ui";
+import { getResearchAreas } from "@/app/lib/content";
 
 export const metadata: Metadata = {
   title: "Research — Prof. Ibrahim Adepoju Adeyanju",
@@ -13,7 +13,11 @@ export const metadata: Metadata = {
     "AI, machine learning, NLP and African language technology — the research of Prof. Ibrahim Adeyanju.",
 };
 
-export default function ResearchPage() {
+export const revalidate = 300;
+
+export default async function ResearchPage() {
+  const research = await getResearchAreas();
+
   return (
     <>
       <PageHeader
@@ -32,7 +36,7 @@ export default function ResearchPage() {
         <div className="mx-auto max-w-6xl px-6">
           <div className="border-t">
             {research.map((r, i) => (
-              <Reveal key={r.area} delay={i * 60}>
+              <Reveal key={r.id} delay={i * 60}>
                 <div className="grid md:grid-cols-[4rem_1fr_1.2fr] gap-3 md:gap-10 items-baseline border-b py-8 px-2">
                   <p className="text-sm font-bold text-primary/50 tabular-nums">
                     {String(i + 1).padStart(2, "0")}

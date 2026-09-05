@@ -3,10 +3,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Counter from "./components/Counter";
-import Reveal from "./components/Reveal";
-import { SectionHeading } from "./components/ui";
-import { initiatives, marquee, press, research, stats } from "./lib/data";
+import Counter from "@/app/components/Counter";
+import Reveal from "@/app/components/Reveal";
+import { SectionHeading } from "@/app/components/ui";
+import {
+  getInitiatives,
+  getMarquee,
+  getPress,
+  getResearchAreas,
+  getStats,
+} from "@/app/lib/content";
 
 const explore = [
   { href: "/about", title: "About", desc: "The scholar leading Nigeria's federal digital infrastructure." },
@@ -17,7 +23,19 @@ const explore = [
   { href: "#contact", title: "Contact", desc: "Speaking engagements, partnerships and media enquiries." },
 ];
 
-export default function Home() {
+/* Rendered statically and refreshed on demand: publishing in the CMS calls
+   revalidatePath("/"), so edits appear without a redeploy. */
+export const revalidate = 300;
+
+export default async function Home() {
+  const [stats, marquee, initiatives, research, press] = await Promise.all([
+    getStats(),
+    getMarquee(),
+    getInitiatives(),
+    getResearchAreas(),
+    getPress(),
+  ]);
+
   return (
     <>
       {/* ============================ HERO ============================ */}
@@ -148,10 +166,10 @@ export default function Home() {
           <Reveal>
             <dl className="grid grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-12">
               {stats.map((s) => (
-                <div key={s.label} className="border-t border-white/20 pt-6">
+                <div key={s.id} className="border-t border-white/20 pt-6">
                   <dt className="sr-only">{s.label}</dt>
                   <dd className="text-5xl md:text-6xl font-bold tracking-tight">
-                    <Counter to={s.to} suffix={s.suffix} />
+                    <Counter to={s.value} suffix={s.suffix} />
                   </dd>
                   <p className="mt-3 text-sm font-medium text-white/70 leading-snug max-w-[16rem]">
                     {s.label}
@@ -345,7 +363,7 @@ export default function Home() {
 
           <div className="mt-12 grid sm:grid-cols-2 gap-x-14">
             {research.map((r, i) => (
-              <Reveal key={r.area} delay={(i % 2) * 100}>
+              <Reveal key={r.id} delay={(i % 2) * 100}>
                 <div className="border-t py-7">
                   <p className="text-sm font-bold text-primary/50 tabular-nums">
                     {String(i + 1).padStart(2, "0")}
@@ -377,7 +395,7 @@ export default function Home() {
 
           <div className="mt-12 border-t">
             {press.map((p, i) => (
-              <Reveal key={p.href} delay={i * 60}>
+              <Reveal key={p.id} delay={i * 60}>
                 <a
                   href={p.href}
                   target="_blank"

@@ -3,10 +3,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import Counter from "../components/Counter";
-import Reveal from "../components/Reveal";
-import { PageHeader, SectionHeading } from "../components/ui";
-import { initiatives } from "../lib/data";
+import Counter from "@/app/components/Counter";
+import Reveal from "@/app/components/Reveal";
+import { PageHeader, SectionHeading } from "@/app/components/ui";
+import { getImpactStats, getInitiatives } from "@/app/lib/content";
 
 export const metadata: Metadata = {
   title: "Impact — Prof. Ibrahim Adepoju Adeyanju",
@@ -14,14 +14,14 @@ export const metadata: Metadata = {
     "Initiatives delivered at Galaxy Backbone under Prof. Adeyanju: 1Government Cloud, GovMail, Project 774 and more.",
 };
 
-const keyNumbers = [
-  { to: 100, suffix: "K+", label: "federal professionals on GovMail" },
-  { to: 30, suffix: "", label: "states reached by fibre infrastructure" },
-  { to: 9, suffix: "", label: "underserved LGAs connected so far" },
-  { to: 20, suffix: "+", label: "industry awards in two years" },
-];
+export const revalidate = 300;
 
-export default function ImpactPage() {
+export default async function ImpactPage() {
+  const [initiatives, keyNumbers] = await Promise.all([
+    getInitiatives(),
+    getImpactStats(),
+  ]);
+
   return (
     <>
       <PageHeader
@@ -41,10 +41,10 @@ export default function ImpactPage() {
           <Reveal>
             <dl className="grid grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-10">
               {keyNumbers.map((s) => (
-                <div key={s.label} className="border-t-2 border-primary/20 pt-5">
+                <div key={s.id} className="border-t-2 border-primary/20 pt-5">
                   <dt className="sr-only">{s.label}</dt>
                   <dd className="text-4xl md:text-5xl font-bold tracking-tight text-primary">
-                    <Counter to={s.to} suffix={s.suffix} />
+                    <Counter to={s.value} suffix={s.suffix} />
                   </dd>
                   <p className="mt-2 text-sm font-semibold text-muted-foreground leading-snug">
                     {s.label}
@@ -73,7 +73,7 @@ export default function ImpactPage() {
 
           <div className="mt-12 grid sm:grid-cols-2 gap-x-14">
             {initiatives.map((item, i) => (
-              <Reveal key={item.title} delay={(i % 2) * 100}>
+              <Reveal key={item.id} delay={(i % 2) * 100}>
                 <div className="border-t py-7">
                   <p className="text-sm font-bold text-primary/50 tabular-nums">
                     {String(i + 1).padStart(2, "0")}

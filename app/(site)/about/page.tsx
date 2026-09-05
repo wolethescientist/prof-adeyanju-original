@@ -2,9 +2,9 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import Reveal from "../components/Reveal";
-import { PageHeader, SectionHeading } from "../components/ui";
-import { atAGlance, education } from "../lib/data";
+import Reveal from "@/app/components/Reveal";
+import { PageHeader, SectionHeading } from "@/app/components/ui";
+import { getEducation, getGlance } from "@/app/lib/content";
 
 export const metadata: Metadata = {
   title: "About — Prof. Ibrahim Adepoju Adeyanju",
@@ -19,7 +19,14 @@ const memberships = [
   ["Top 100", "Leading personalities in Nigerian telecoms"],
 ];
 
-export default function AboutPage() {
+export const revalidate = 300;
+
+export default async function AboutPage() {
+  const [atAGlance, education] = await Promise.all([
+    getGlance(),
+    getEducation(),
+  ]);
+
   return (
     <>
       <PageHeader
@@ -75,13 +82,13 @@ export default function AboutPage() {
                 At a glance
               </h2>
               <dl className="flex flex-col gap-5">
-                {atAGlance.map(([k, v]) => (
-                  <div key={k} className="grid grid-cols-[8.5rem_1fr] gap-4 items-baseline">
+                {atAGlance.map((row) => (
+                  <div key={row.id} className="grid grid-cols-[8.5rem_1fr] gap-4 items-baseline">
                     <dt className="text-xs font-bold uppercase tracking-wide text-muted-foreground/80">
-                      {k}
+                      {row.label}
                     </dt>
                     <dd className="text-sm font-semibold text-foreground leading-relaxed">
-                      {v}
+                      {row.value}
                     </dd>
                   </div>
                 ))}
@@ -118,9 +125,9 @@ export default function AboutPage() {
 
           <div className="mt-12 border-t">
             {education.map((e, i) => (
-              <Reveal key={e.years + e.degree} delay={i * 60}>
+              <Reveal key={e.id} delay={i * 60}>
                 <a
-                  href={e.href}
+                  href={e.href ?? undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group grid md:grid-cols-[10rem_1fr_auto_auto] gap-2 md:gap-8 items-baseline border-b py-6 px-2 cursor-pointer transition-colors duration-200 hover:bg-accent/60"

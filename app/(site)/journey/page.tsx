@@ -2,9 +2,9 @@ import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import Reveal from "../components/Reveal";
-import { PageHeader } from "../components/ui";
-import { timeline } from "../lib/data";
+import Reveal from "@/app/components/Reveal";
+import { PageHeader } from "@/app/components/ui";
+import { getTimeline } from "@/app/lib/content";
 
 export const metadata: Metadata = {
   title: "Journey — Prof. Ibrahim Adepoju Adeyanju",
@@ -12,7 +12,11 @@ export const metadata: Metadata = {
     "From a First Class at LAUTECH to MD/CEO of Galaxy Backbone — the career of Prof. Ibrahim Adeyanju.",
 };
 
-export default function JourneyPage() {
+export const revalidate = 300;
+
+export default async function JourneyPage() {
+  const timeline = await getTimeline();
+
   return (
     <>
       <PageHeader
@@ -29,7 +33,7 @@ export default function JourneyPage() {
         <div className="mx-auto max-w-5xl px-6">
           <ol className="relative border-l-2 border-secondary ml-2 md:ml-4">
             {timeline.map((t, i) => (
-              <li key={t.period} className="relative pl-10 md:pl-14 pb-14 last:pb-0">
+              <li key={t.id} className="relative pl-10 md:pl-14 pb-14 last:pb-0">
                 <span
                   className="absolute -left-[9px] top-1.5 size-4 rounded-full bg-primary border-4 border-background"
                   aria-hidden="true"

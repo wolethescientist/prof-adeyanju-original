@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { Public_Sans, Space_Grotesk } from "next/font/google";
-import Footer from "./components/Footer";
-import Nav from "./components/Nav";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +14,9 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://prof-adeyanju.vercel.app"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://prof-adeyanju.vercel.app"
+  ),
   title: "Prof. Ibrahim Adepoju Adeyanju — MD/CEO, Galaxy Backbone Limited",
   description:
     "Professor of Computer Engineering, AI researcher and Managing Director/CEO of Galaxy Backbone Limited — leading Nigeria's federal digital infrastructure.",
@@ -28,6 +28,8 @@ export const metadata: Metadata = {
   },
 };
 
+/* The public site and the CMS have different chrome, so the shared root only
+   owns the document itself — each route group brings its own layout. */
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -38,11 +40,7 @@ export default function RootLayout({
       lang="en"
       className={cn("h-full antialiased", publicSans.variable, spaceGrotesk.variable)}
     >
-      <body className="min-h-full flex flex-col">
-        <Nav />
-        <main className="grow">{children}</main>
-        <Footer />
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

@@ -1,0 +1,35 @@
+# Local / self-hosted Postgres for the Prof. Adeyanju CMS.
+#
+#   docker compose up -d db     -> Postgres on localhost:5432
+#   npm run db:push             -> create the tables
+#   npm run db:seed             -> load current site content + first admin user
+#
+# The app talks to this through DATABASE_URL. Point that same variable at a
+# Neon connection string on Vercel and nothing else has to change.
+services:
+  db:
+    build:
+      context: ./docker
+      dockerfile: postgres.Dockerfile
+    image: adeyanju-cms-postgres:17
+    container_name: adeyanju-cms-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-adeyanju}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adeyanju_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-adeyanju_cms}
+      # Deterministic collation so ORDER BY matches Neon's behaviour.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-adeyanju} -d ${POSTGRES_DB:-adeyanju_cms}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  db_data:

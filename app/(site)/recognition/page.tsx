@@ -1,10 +1,10 @@
 import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
-import Counter from "../components/Counter";
-import Reveal from "../components/Reveal";
-import { PageHeader, SectionHeading } from "../components/ui";
-import { gbbAwards, honours, press } from "../lib/data";
+import Counter from "@/app/components/Counter";
+import Reveal from "@/app/components/Reveal";
+import { PageHeader, SectionHeading } from "@/app/components/ui";
+import { getAwards, getHonours, getPress } from "@/app/lib/content";
 
 export const metadata: Metadata = {
   title: "Recognition — Prof. Ibrahim Adepoju Adeyanju",
@@ -12,7 +12,15 @@ export const metadata: Metadata = {
     "Honours, awards and press coverage for Prof. Ibrahim Adeyanju and Galaxy Backbone.",
 };
 
-export default function RecognitionPage() {
+export const revalidate = 300;
+
+export default async function RecognitionPage() {
+  const [honours, gbbAwards, press] = await Promise.all([
+    getHonours(),
+    getAwards(),
+    getPress(),
+  ]);
+
   return (
     <>
       <PageHeader
@@ -34,14 +42,14 @@ export default function RecognitionPage() {
             <ul className="border-t">
               {honours.map((h) => (
                 <li
-                  key={h}
+                  key={h.id}
                   className="flex items-baseline gap-4 border-b py-4 text-sm md:text-base font-semibold"
                 >
                   <span
                     className="size-1.5 shrink-0 rounded-full bg-primary translate-y-[-2px]"
                     aria-hidden="true"
                   />
-                  {h}
+                  {h.text}
                 </li>
               ))}
             </ul>
@@ -54,7 +62,7 @@ export default function RecognitionPage() {
             <ul className="border-t">
               {gbbAwards.map((a) => (
                 <li
-                  key={a.award}
+                  key={a.id}
                   className="flex items-center justify-between gap-4 border-b py-4 text-sm md:text-base font-semibold"
                 >
                   <span>{a.award}</span>
@@ -100,7 +108,7 @@ export default function RecognitionPage() {
 
           <div className="mt-12 border-t">
             {press.map((p, i) => (
-              <Reveal key={p.href} delay={i * 60}>
+              <Reveal key={p.id} delay={i * 60}>
                 <a
                   href={p.href}
                   target="_blank"
