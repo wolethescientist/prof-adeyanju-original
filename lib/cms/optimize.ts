@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { Sharp } from "sharp";
+import { MAX_IMAGE_DIMENSION } from "./constants";
 
 /**
  * Prepares an uploaded image for storage.
@@ -42,8 +43,6 @@ async function loadSharp(): Promise<SharpModule | null> {
   return sharpModule;
 }
 
-/** Nothing in the design is displayed wider or taller than this. */
-const MAX_DIMENSION = 2560;
 const JPEG_QUALITY = 82;
 const WEBP_QUALITY = 82;
 
@@ -81,8 +80,8 @@ export async function optimizeImage(
          portrait phone photos come out on their side. */
       .rotate()
       .resize({
-        width: MAX_DIMENSION,
-        height: MAX_DIMENSION,
+        width: MAX_IMAGE_DIMENSION,
+        height: MAX_IMAGE_DIMENSION,
         fit: "inside",
         withoutEnlargement: true,
       });

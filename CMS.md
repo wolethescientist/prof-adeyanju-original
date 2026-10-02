@@ -168,6 +168,12 @@ Postgres**, so a database backup is a complete backup of the site's content.
   photo straight off a phone lands in the database at about 1.2MB. `next/image`
   then resizes and re-formats again on delivery.
 
+  Vercel refuses any request over 4.5MB, so the upload form shrinks anything
+  over 4MB in the browser first (`lib/cms/shrink-image.ts`), to the same
+  2560px. `serverActions.bodySizeLimit` in `next.config.ts` is raised from
+  Next's 1MB default to match. GIFs are never re-encoded (that would lose the
+  animation), so they must already be under 4MB.
+
   The cache-busting checksum sits in the URL path rather than a query string so
   that `images.localPatterns` in `next.config.ts` can pin `search: ""`, which
   stops anyone flooding the image optimizer's cache with invented query

@@ -23,6 +23,12 @@ export async function proxy(request: NextRequest) {
 
   if (pathname === "/admin/login") return NextResponse.next();
 
+  /* Server Actions check the session themselves (requireUser) and reply with
+     a redirect the client router follows. Redirecting them here instead hands
+     the form a login page it can't read, so an expired session would surface
+     as a failed save rather than a trip to the login screen. */
+  if (request.headers.has("next-action")) return NextResponse.next();
+
   if (!sessionId) {
     const login = new URL("/admin/login", request.url);
     /* Remember where they were going so login can return them there. */

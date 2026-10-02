@@ -8,7 +8,11 @@ import { media } from "@/db/schema";
 import { requireUser } from "@/lib/auth/session";
 import { imageSize } from "@/lib/cms/image-size";
 import { optimizeImage } from "@/lib/cms/optimize";
-import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from "@/lib/cms/constants";
+import {
+  MAX_UPLOAD_BYTES,
+  MAX_UPLOAD_LABEL,
+  imageTooLargeMessage,
+} from "@/lib/cms/constants";
 
 /** Formats the browser accepts and we know how to measure. */
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -31,9 +35,7 @@ export async function uploadMedia(
     return { error: "Images must be JPEG, PNG, WebP or GIF." };
   }
   if (file.size > MAX_UPLOAD_BYTES) {
-    return {
-      error: `That image is ${(file.size / 1024 / 1024).toFixed(1)}MB. The limit is ${MAX_UPLOAD_LABEL} — please resize it and try again.`,
-    };
+    return { error: imageTooLargeMessage(file.size, MAX_UPLOAD_LABEL) };
   }
   if (!alt) {
     return {
