@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ArticleLayout from "@/app/components/article/ArticleLayout";
-import { AwardCard, AwardPlate } from "@/app/components/cards";
+import { AwardCard } from "@/app/components/cards";
 import Seal, { RECIPIENT_NAME } from "@/app/components/Seal";
 import { describe, getAward, getAwardCards } from "@/app/lib/articles";
 import { formatDate } from "@/app/lib/format";
@@ -68,7 +68,6 @@ export default async function AwardPage({ params }: { params: Promise<{ slug: st
         ...(award.awardedBy ? [{ label: "Presented by", value: award.awardedBy }] : []),
       ]}
       cover={award.cover}
-      coverFallback={<AwardPlate year={award.year} awardedBy={award.awardedBy} large />}
       body={award.body}
       gallery={award.gallery}
       attachment={award.attachment}

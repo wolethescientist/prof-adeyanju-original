@@ -69,12 +69,13 @@ export default function ImageField({
       <input type="hidden" name={field.name} value={chosen ? id : ""} />
 
       {chosen ? (
-        <div className={cn("group relative overflow-hidden bg-muted", cover ? "rounded-t-2xl" : "rounded-xl border")}>
+        <div className={cn("group relative overflow-hidden", cover ? "rounded-t-2xl bg-ink" : "rounded-xl border bg-muted")}>
+          {/* The whole photo, as visitors will see it — never cropped. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={mediaUrl(chosen)!}
             alt={chosen.alt}
-            className={cn("w-full object-cover", cover ? "aspect-[21/9]" : "aspect-[16/9] max-h-64")}
+            className={cn("mx-auto w-auto object-contain", cover ? "max-h-[26rem]" : "max-h-64")}
           />
           {uploading && (
             <div className="absolute inset-0 grid place-items-center bg-ink/50 text-white">

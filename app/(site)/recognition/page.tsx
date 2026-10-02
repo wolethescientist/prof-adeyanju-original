@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import AwardFeed from "@/app/components/AwardFeed";
 import { PressCard } from "@/app/components/cards";
 import Counter from "@/app/components/Counter";
-import Laurel from "@/app/components/Laurel";
 import Reveal from "@/app/components/Reveal";
 import { Accent, PageHeader, SectionHeading } from "@/app/components/ui";
 import { getAwardCards, getPressCards } from "@/app/lib/articles";
@@ -81,7 +80,6 @@ export default async function RecognitionPage() {
                   className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(29,78,216,0.35),transparent_60%)]"
                   aria-hidden="true"
                 />
-                <Laurel className="absolute -right-8 -bottom-10 size-56 text-gold/15" />
                 <div className="relative grid items-center gap-6 md:grid-cols-[auto_1fr] md:gap-12">
                   <p className="font-heading text-7xl font-medium tracking-tight text-[#f3dc9b]">
                     <Counter to={20} suffix="+" />

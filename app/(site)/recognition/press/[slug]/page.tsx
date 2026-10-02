@@ -58,13 +58,6 @@ export default async function PressPage({ params }: { params: Promise<{ slug: st
         ...(published ? [{ label: "Published", value: published }] : []),
       ]}
       cover={item.cover}
-      coverFallback={
-        <div className="absolute inset-0 grid place-items-center bg-[#f7f8fb]">
-          <p className="font-heading text-5xl md:text-7xl font-semibold italic tracking-tight text-foreground/85">
-            {item.outlet}
-          </p>
-        </div>
-      }
       body={item.body}
       gallery={item.gallery}
       attachment={item.attachment}

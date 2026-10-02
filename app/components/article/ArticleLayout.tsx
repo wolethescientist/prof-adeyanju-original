@@ -14,9 +14,10 @@ export type Detail = { label: string; value: React.ReactNode };
  * The page every award, press item and initiative opens to.
  *
  * It reads like a published piece: a header with the title and summary, the
- * cover photo, the story with a gallery beneath it, and a side panel with the
- * facts, the PDF and a link to share. Anything the team left empty is simply
- * not shown — an award with only a name and a year still makes a whole page.
+ * cover photo shown whole, the story with a gallery beneath it, and a side
+ * panel with the facts, the PDF and a link to share. Anything the team left
+ * empty is simply not shown — no stand-in picture where there is no photo —
+ * so an award with only a name and a year still makes a clean page.
  */
 export default function ArticleLayout({
   trail,
@@ -25,7 +26,6 @@ export default function ArticleLayout({
   summary,
   details,
   cover,
-  coverFallback,
   body,
   gallery,
   attachment,
@@ -39,8 +39,6 @@ export default function ArticleLayout({
   summary: string | null;
   details: Detail[];
   cover: Picture | null;
-  /** What fills the cover band when there is no photo. */
-  coverFallback?: React.ReactNode;
   body: string | null;
   gallery: Picture[];
   attachment: Attachment | null;
@@ -148,22 +146,34 @@ export default function ArticleLayout({
           </div>
         </header>
 
-        <div className="mx-auto max-w-6xl px-6 pt-10">
-          <div className="animate-fade-up overflow-hidden rounded-3xl border bg-ink shadow-[0_30px_70px_rgba(16,24,40,0.16)]" style={{ animationDelay: "300ms" }}>
-            {cover ? (
-              <ZoomableImage
-                picture={cover}
-                index={0}
-                priority
-                sizes="(min-width: 1152px) 1104px, 100vw"
-                className="aspect-[16/9] md:aspect-[21/10]"
-              />
-            ) : (
-              <div className="relative aspect-[16/9] md:aspect-[21/8]">{coverFallback}</div>
-            )}
-            <div className="foil h-[3px]" aria-hidden="true" />
+        {cover && (
+          <div className="mx-auto max-w-6xl px-6 pt-10">
+            <div
+              className="animate-fade-up overflow-hidden rounded-3xl border bg-ink shadow-[0_30px_70px_rgba(16,24,40,0.16)]"
+              style={{ animationDelay: "300ms" }}
+            >
+              {/* The photo at its own proportions, capped to the screen's
+                  height; a tall portrait sits centred on the navy. */}
+              <div
+                className="relative max-h-[78vh] w-full"
+                style={{
+                  aspectRatio:
+                    cover.width && cover.height ? `${cover.width} / ${cover.height}` : "16 / 9",
+                }}
+              >
+                <ZoomableImage
+                  picture={cover}
+                  index={0}
+                  priority
+                  fit="contain"
+                  sizes="(min-width: 1152px) 1104px, 100vw"
+                  className="h-full"
+                />
+              </div>
+              <div className="foil h-[3px]" aria-hidden="true" />
+            </div>
           </div>
-        </div>
+        )}
 
         <div
           className={cn(

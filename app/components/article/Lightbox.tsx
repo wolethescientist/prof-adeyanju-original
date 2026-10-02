@@ -156,12 +156,15 @@ export function ZoomableImage({
   sizes,
   className,
   priority = false,
+  fit = "cover",
 }: {
   picture: Picture;
   index: number;
   sizes: string;
   className?: string;
   priority?: boolean;
+  /** "contain" shows the whole photo; "cover" fills the frame (gallery tiles). */
+  fit?: "cover" | "contain";
 }) {
   const open = useContext(LightboxContext);
   return (
@@ -177,9 +180,14 @@ export function ZoomableImage({
         fill
         sizes={sizes}
         priority={priority}
-        /* Award and event photos are often portraits; crop toward the top,
-           where faces are, rather than through the middle. */
-        className="object-cover object-[50%_22%] transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+        /* Gallery tiles are cropped toward the top, where faces usually are;
+           the cover is shown whole. */
+        className={cn(
+          "transition-transform duration-700 ease-out",
+          fit === "contain"
+            ? "object-contain group-hover:scale-[1.01]"
+            : "object-cover object-[50%_22%] group-hover:scale-[1.03]"
+        )}
       />
       <span className="absolute right-3 bottom-3 grid size-9 place-items-center rounded-full bg-ink/70 text-white opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
         <Expand className="size-4" aria-hidden="true" />

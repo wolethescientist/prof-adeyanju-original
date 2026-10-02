@@ -57,19 +57,6 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
       summary={item.summary}
       details={[]}
       cover={item.cover}
-      coverFallback={
-        <div className="absolute inset-0 grid place-items-center">
-          <div
-            className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(29,78,216,0.55),transparent_60%),radial-gradient(ellipse_at_80%_90%,rgba(14,165,233,0.25),transparent_55%)]"
-            aria-hidden="true"
-          />
-          <div
-            className="absolute inset-0 opacity-25 bg-[radial-gradient(rgba(255,255,255,0.5)_1px,transparent_1.5px)] [background-size:22px_22px]"
-            aria-hidden="true"
-          />
-          <Icon className="relative size-20 text-white/90" aria-hidden="true" />
-        </div>
-      }
       body={item.body}
       gallery={item.gallery}
       attachment={item.attachment}
