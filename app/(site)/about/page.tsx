@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Reveal from "@/app/components/Reveal";
-import { PageHeader, SectionHeading } from "@/app/components/ui";
+import { Accent, Kicker, PageHeader, SectionHeading } from "@/app/components/ui";
 import { getEducation, getGlance } from "@/app/lib/content";
 
 export const metadata: Metadata = {
@@ -33,8 +33,7 @@ export default async function AboutPage() {
         kicker="About"
         title={
           <>
-            From first-class scholar to{" "}
-            <span className="text-primary">national digital architect</span>
+            From first-class scholar to <Accent>national digital architect</Accent>
           </>
         }
         intro="Engineer, professor and public sector leader — one career built across three continents."
@@ -44,7 +43,7 @@ export default async function AboutPage() {
       <section className="relative py-20">
         <div className="mx-auto max-w-6xl px-6 grid md:grid-cols-2 gap-14 items-start">
           <Reveal>
-            <div className="flex flex-col gap-5 text-muted-foreground leading-relaxed font-medium">
+            <div className="flex flex-col gap-5 text-lg text-muted-foreground leading-relaxed">
               <p>
                 Prof. Ibrahim Adepoju Adeyanju is a Professor of Computer
                 Engineering specialising in Intelligent Systems, and the
@@ -68,8 +67,8 @@ export default async function AboutPage() {
               </p>
             </div>
 
-            <blockquote className="mt-9 border-l-4 border-primary pl-6 py-1">
-              <p className="text-lg font-semibold leading-relaxed text-foreground">
+            <blockquote className="mt-9 border-l-[3px] border-gold pl-6 py-1">
+              <p className="text-2xl italic leading-snug text-foreground">
                 One career, three continents — from the lecture theatre to the
                 boardroom of Nigeria&apos;s digital backbone.
               </p>
@@ -77,17 +76,18 @@ export default async function AboutPage() {
           </Reveal>
 
           <Reveal delay={150}>
-            <div className="rounded-3xl border bg-card p-8 md:p-9 border-t-4 border-t-primary shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-primary mb-7">
-                At a glance
+            <div className="relative overflow-hidden rounded-3xl border bg-card p-8 md:p-9 shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+              <div className="foil absolute inset-x-0 top-0 h-[3px]" aria-hidden="true" />
+              <h2 className="mb-7">
+                <Kicker>At a glance</Kicker>
               </h2>
               <dl className="flex flex-col gap-5">
                 {atAGlance.map((row) => (
                   <div key={row.id} className="grid grid-cols-[8.5rem_1fr] gap-4 items-baseline">
-                    <dt className="text-xs font-bold uppercase tracking-wide text-muted-foreground/80">
+                    <dt className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.14em] text-muted-foreground">
                       {row.label}
                     </dt>
-                    <dd className="text-sm font-semibold text-foreground leading-relaxed">
+                    <dd className="font-heading text-lg text-foreground leading-snug">
                       {row.value}
                     </dd>
                   </div>
@@ -98,8 +98,8 @@ export default async function AboutPage() {
             <div className="mt-6 grid grid-cols-2 gap-x-8">
               {memberships.map(([title, sub]) => (
                 <div key={title} className="border-t py-5">
-                  <p className="text-lg font-bold">{title}</p>
-                  <p className="mt-0.5 text-xs font-semibold text-muted-foreground">
+                  <p className="font-heading text-2xl font-medium">{title}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {sub}
                   </p>
                 </div>
@@ -117,7 +117,7 @@ export default async function AboutPage() {
               kicker="Universities"
               title={
                 <>
-                  Trained on <span className="text-primary">three continents</span>
+                  Trained on <Accent>three continents</Accent>
                 </>
               }
             />
@@ -130,11 +130,11 @@ export default async function AboutPage() {
                   href={e.href ?? undefined}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group grid md:grid-cols-[10rem_1fr_auto_auto] gap-2 md:gap-8 items-baseline border-b py-6 px-2 cursor-pointer transition-colors duration-200 hover:bg-accent/60"
+                  className="group grid md:grid-cols-[9rem_1fr_auto_auto] gap-2 md:gap-8 items-baseline border-b py-7 px-2 cursor-pointer transition-colors duration-200 hover:bg-accent/60"
                 >
-                  <p className="text-sm font-bold text-primary tabular-nums">{e.years}</p>
+                  <p className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-primary tabular-nums">{e.years}</p>
                   <div>
-                    <h3 className="text-lg md:text-xl font-bold group-hover:text-primary transition-colors duration-200">
+                    <h3 className="text-xl md:text-2xl font-medium group-hover:text-primary transition-colors duration-200">
                       {e.degree}
                     </h3>
                     {e.description && (

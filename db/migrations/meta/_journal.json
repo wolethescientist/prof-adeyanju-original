@@ -15,6 +15,13 @@
       "when": 1788637354843,
       "tag": "0001_add_description_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790931138317,
+      "tag": "0002_articles",
+      "breakpoints": true
     }
   ]
 }

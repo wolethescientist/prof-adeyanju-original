@@ -21,6 +21,7 @@ const { db, pool } = await import("./index");
 const schema = await import("./schema");
 const { hashPassword, passwordProblem } = await import("../lib/auth/password");
 const { imageSize } = await import("../lib/cms/image-size");
+const { slugify } = await import("../lib/cms/slug");
 
 /* ------------------------------------------------------------------ helpers */
 
@@ -35,6 +36,11 @@ async function isEmpty(table: PgTable) {
 }
 
 /** Inserts rows only into a table that is still empty. */
+/** Gives article rows the page address the CMS would have made for them. */
+function withSlugs<K extends string, R extends Record<K, string>>(key: K, rows: R[]) {
+  return rows.map((row) => ({ ...row, slug: slugify(row[key]) }));
+}
+
 async function seedTable<T extends PgTable>(
   name: string,
   table: T,
@@ -266,7 +272,7 @@ async function main() {
     },
   ]);
 
-  await seedTable("initiatives", schema.initiatives, [
+  await seedTable("initiatives", schema.initiatives, withSlugs("title", [
     {
       title: "1Government Cloud",
       detail:
@@ -303,7 +309,7 @@ async function main() {
         "Launched the Integrated Digital Transformation Strategy and a Government-as-a-Platform framework, with strategic partnerships including WIOCC to deepen the national fibre backbone.",
       icon: "Map",
     },
-  ]);
+  ]));
 
   await seedTable("research areas", schema.researchAreas, [
     {
@@ -383,7 +389,7 @@ async function main() {
     ].map((text) => ({ text }))
   );
 
-  await seedTable("awards", schema.awards, [
+  await seedTable("awards", schema.awards, withSlugs("award", [
     { award: "NET5.5G Pioneer Award", year: "2025" },
     { award: "Inaugural Artificial Intelligence Award", year: "2025" },
     {
@@ -397,9 +403,9 @@ async function main() {
     },
     { award: "BPSR Website Performance Award", year: "2025" },
     { award: "Nigeria @ 65 Independence Kitty — Overall Winner", year: "2025" },
-  ]);
+  ]));
 
-  await seedTable("press", schema.pressItems, [
+  await seedTable("press", schema.pressItems, withSlugs("title", [
     {
       outlet: "BusinessDay",
       title:
@@ -424,7 +430,7 @@ async function main() {
         "Two-Year Review: Galaxy Backbone Advances Cloud, Cybersecurity and Public Sector Digital Services",
       href: "https://techafricanews.com/2026/02/25/two-year-review-galaxy-backbone-advances-cloud-cybersecurity-and-public-sector-digital-services/",
     },
-  ]);
+  ]));
 
   await seedTable("at a glance", schema.glanceItems, [
     {

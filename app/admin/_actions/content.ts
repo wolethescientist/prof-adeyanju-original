@@ -1,11 +1,13 @@
 "use server";
 
-import { asc, desc, eq, gt, lt, max, sql } from "drizzle-orm";
+import { asc, desc, eq, gt, like, lt, max, or, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { requireUser } from "@/lib/auth/session";
 import { getContentType, schemaFor, type ContentType } from "@/lib/cms/registry";
+import { cleanRichText, hasText } from "@/lib/cms/rich-text";
+import { slugify } from "@/lib/cms/slug";
 
 /**
  * One set of actions for all ten content sections.
@@ -60,6 +62,7 @@ type GenericTable = {
   position: unknown;
   published: unknown;
   updatedAt: unknown;
+  slug?: unknown;
 };
 function cols(type: ContentType) {
   return type.table as unknown as GenericTable;
@@ -87,7 +90,34 @@ function refuseIfFixed(type: ContentType) {
 /** Refresh the public pages this section feeds, plus the admin list itself. */
 function refresh(type: ContentType) {
   for (const path of type.revalidates) revalidatePath(path);
+  /* Every article page in the section: a change can rename or hide one, and
+     each page lists its neighbours under "More". A route pattern has to name
+     the route group the public pages live in, or it matches nothing. */
+  if (type.article) revalidatePath(`/(site)${type.article.path}/[slug]`, "page");
   revalidatePath(`/admin/content/${type.slug}`);
+}
+
+/**
+ * A page address for a new article, made from its title and numbered if
+ * another entry in the section already has it (award, award-2, ...).
+ */
+async function uniqueSlug(type: ContentType, title: string) {
+  const base = slugify(title, type.singular.toLowerCase().replace(/\s+/g, "-"));
+  const slugColumn = cols(type).slug as never;
+  const taken = new Set(
+    (
+      (await db
+        .select({ slug: slugColumn })
+        .from(type.table as AnyTable)
+        .where(or(eq(slugColumn, base), like(slugColumn, `${base}-%`)))) as {
+        slug: string;
+      }[]
+    ).map((row) => row.slug)
+  );
+  if (!taken.has(base)) return base;
+  for (let n = 2; ; n++) {
+    if (!taken.has(`${base}-${n}`)) return `${base}-${n}`;
+  }
 }
 
 /** Turns the posted form into the shape the table expects. */
@@ -95,6 +125,13 @@ function readForm(type: ContentType, formData: FormData) {
   const raw: Record<string, unknown> = {};
 
   for (const field of type.fields) {
+    if (field.type === "gallery") {
+      /* One hidden input per photo, in the order the editor shows them. */
+      raw[field.name] = formData
+        .getAll(field.name)
+        .filter((value): value is string => typeof value === "string" && value !== "");
+      continue;
+    }
     const value = formData.get(field.name);
     raw[field.name] = typeof value === "string" ? value.trim() : "";
   }
@@ -122,6 +159,12 @@ function readForm(type: ContentType, formData: FormData) {
   >;
   const values: Record<string, unknown> = { ...parsed.data };
   for (const field of type.fields) {
+    /* Formatted text is cleaned to what the editor can produce, and an
+       editor left empty is stored as no story at all. */
+    if (field.type === "richtext") {
+      const html = cleanRichText(values[field.name] as string | null);
+      values[field.name] = hasText(html) ? html : "";
+    }
     if (values[field.name] === "" && !field.required) {
       values[field.name] = columns[field.name]?.notNull ? "" : null;
     }
@@ -143,14 +186,31 @@ export async function createEntry(
   if (!result.ok) return { fieldErrors: result.fieldErrors };
 
   try {
-    /* New rows go to the bottom of the section. */
-    const [{ highest }] = await db
-      .select({ highest: max(cols(type).position as never) })
-      .from(type.table as AnyTable);
+    /* New rows go to the bottom of the section — except articles, which go
+       to the top: the newest award or story is the one to lead with. */
+    const position = type.article
+      ? (
+          await db
+            .select({ lowest: sql<number | null>`min(${cols(type).position as never})` })
+            .from(type.table as AnyTable)
+        )[0].lowest
+      : (
+          await db
+            .select({ highest: max(cols(type).position as never) })
+            .from(type.table as AnyTable)
+        )[0].highest;
 
-    await db
-      .insert(type.table as AnyTable)
-      .values({ ...result.values, position: ((highest as number | null) ?? -1) + 1 });
+    const values: Record<string, unknown> = {
+      ...result.values,
+      position: type.article
+        ? ((position as number | null) ?? 1) - 1
+        : ((position as number | null) ?? -1) + 1,
+    };
+    if (type.article) {
+      values.slug = await uniqueSlug(type, String(result.values[type.titleField] ?? ""));
+    }
+
+    await db.insert(type.table as AnyTable).values(values);
   } catch (error) {
     console.error(`[cms] failed to create ${type.slug}:`, error);
     return { error: describeDbError(error) };

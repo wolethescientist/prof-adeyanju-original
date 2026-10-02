@@ -31,8 +31,8 @@ export default async function TeamPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="max-w-xl">
-        <h1 className="text-2xl font-bold tracking-tight">Team</h1>
-        <p className="mt-1.5 text-sm text-muted-foreground font-medium">
+        <h1 className="font-heading text-4xl font-medium tracking-tight">Team</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">
           Everyone who can sign in and update the website.
         </p>
       </div>
@@ -85,7 +85,7 @@ export default async function TeamPage() {
       </ul>
 
       <section className="flex flex-col gap-3 max-w-lg">
-        <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
+        <h2 className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
           Add someone
         </h2>
         <AddUserForm />

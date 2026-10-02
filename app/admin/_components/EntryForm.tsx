@@ -1,102 +1,243 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { AlertCircle, Save } from "lucide-react";
+import { AlertCircle, ExternalLink, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ICON_NAMES } from "@/app/lib/icons";
+import { ICON_NAMES, resolveIcon } from "@/app/lib/icons";
 import type { Field } from "@/lib/cms/registry";
-import { mediaUrl } from "@/lib/cms/media-url";
-import type { MediaItem } from "@/lib/cms/media";
+import type { MediaItem } from "@/lib/cms/media-types";
+import { cn } from "@/lib/utils";
 import type { FormState } from "../_actions/content";
+import AttachmentField from "./editor/AttachmentField";
+import { EditorProvider } from "./editor/context";
+import GalleryField from "./editor/GalleryField";
+import ImageField from "./editor/ImageField";
+import { FieldError, FieldHelp, FieldLabel } from "./editor/parts";
+import RichTextField from "./editor/RichTextField";
 
 type Props = {
   /** Serialisable slice of the registry entry — the Drizzle table cannot cross
       the server/client boundary. */
-  spec: { slug: string; label: string; singular: string; fields: Field[] };
+  spec: {
+    slug: string;
+    label: string;
+    singular: string;
+    fields: Field[];
+    titleField: string;
+    article: boolean;
+  };
   action: (prev: FormState, formData: FormData) => Promise<FormState>;
   initial?: Record<string, unknown>;
   images: MediaItem[];
+  files: MediaItem[];
   submitLabel: string;
+  /** The entry's public page, when it has one and is live. */
+  viewHref?: string | null;
 };
 
-function SubmitButton({ label }: { label: string }) {
+function SubmitButton({ label, className }: { label: string; className?: string }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" size="lg" disabled={pending} className="h-11 font-bold px-6">
+    <Button type="submit" size="lg" disabled={pending} className={cn("h-11 font-bold px-6", className)}>
       {pending ? "Saving…" : label}
       {!pending && <Save data-icon="inline-end" />}
     </Button>
   );
 }
 
-/** Image chooser: a native select plus a live preview of the choice. */
-function ImageField({
+/** A textarea that grows with what is typed — for titles and summaries. */
+function GrowingText({
   field,
-  images,
   defaultValue,
   error,
+  className,
 }: {
   field: Field;
-  images: MediaItem[];
   defaultValue: string;
   error?: string;
+  className: string;
 }) {
-  const [selected, setSelected] = useState(defaultValue);
-  const chosen = images.find((image) => image.id === selected);
+  const ref = useRef<HTMLTextAreaElement>(null);
+  const [length, setLength] = useState(defaultValue.length);
+
+  const fit = () => {
+    const element = ref.current;
+    if (!element) return;
+    element.style.height = "auto";
+    element.style.height = `${element.scrollHeight}px`;
+  };
+  useEffect(fit, []);
 
   return (
-    <div className="flex flex-col gap-2">
-      <Label htmlFor={field.name}>{field.label}</Label>
-      <Select
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={field.name} className="sr-only">
+        {field.label}
+      </label>
+      <textarea
+        ref={ref}
         id={field.name}
         name={field.name}
-        value={selected}
-        onChange={(event) => setSelected(event.target.value)}
+        rows={1}
+        defaultValue={defaultValue}
+        required={field.required}
+        maxLength={field.maxLength}
+        placeholder={field.placeholder}
         aria-invalid={error ? true : undefined}
         aria-describedby={field.help ? `${field.name}-help` : undefined}
-      >
-        <option value="">No image</option>
-        {images.map((image) => (
-          <option key={image.id} value={image.id}>
-            {image.filename}
-          </option>
-        ))}
-      </Select>
-
-      {chosen && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={mediaUrl(chosen)!}
-          alt={chosen.alt}
-          className="mt-1 h-32 w-auto rounded-lg border object-cover"
-        />
-      )}
-
-      {field.help && (
-        <p id={`${field.name}-help`} className="text-xs text-muted-foreground">
-          {field.help}{" "}
-          <Link href="/admin/media" className="underline hover:text-primary">
-            Manage images
-          </Link>
-        </p>
-      )}
-      {error && <FieldError message={error} />}
+        onKeyDown={(event) => {
+          /* Enter in a title doesn't start a new line (or submit the form). */
+          if (field.appearance === "headline" && event.key === "Enter") event.preventDefault();
+        }}
+        onInput={(event) => {
+          fit();
+          setLength(event.currentTarget.value.length);
+          /* A title is one line of text, however long it wraps. */
+          if (field.appearance === "headline") {
+            event.currentTarget.value = event.currentTarget.value.replace(/\n/g, " ");
+          }
+        }}
+        className={cn(
+          "w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none placeholder:text-muted-foreground/45 focus:ring-0",
+          className
+        )}
+      />
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          {error && <FieldError message={error} />}
+          <FieldHelp field={field} />
+        </div>
+        {field.maxLength && length > field.maxLength * 0.8 && (
+          <span className="shrink-0 font-mono text-[0.68rem] text-muted-foreground tabular-nums">
+            {length} / {field.maxLength}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
 
-function FieldError({ message }: { message: string }) {
+/** A few fixed options, as a row of buttons — e.g. who an award went to. */
+function ChoiceField({ field, defaultValue, error }: { field: Field; defaultValue: string; error?: string }) {
+  const options = field.options ?? [];
+  const [value, setValue] = useState(defaultValue || options[0]?.value || "");
   return (
-    <p className="flex items-center gap-1.5 text-xs font-semibold text-destructive">
-      <AlertCircle className="size-3.5 shrink-0" aria-hidden="true" />
-      {message}
-    </p>
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-2 text-sm font-semibold">{field.label}</legend>
+      <div className="grid grid-cols-2 gap-2">
+        {options.map((option) => (
+          <label
+            key={option.value}
+            className={cn(
+              "flex cursor-pointer items-center justify-center whitespace-nowrap rounded-xl border px-2 py-2.5 text-center text-[0.8rem] font-semibold transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
+              value === option.value
+                ? "border-ink bg-ink text-white"
+                : "bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground"
+            )}
+          >
+            <input
+              type="radio"
+              name={field.name}
+              value={option.value}
+              checked={value === option.value}
+              onChange={() => setValue(option.value)}
+              className="sr-only"
+            />
+            {option.label}
+          </label>
+        ))}
+      </div>
+      {error && <FieldError message={error} />}
+      <FieldHelp field={field} />
+    </fieldset>
+  );
+}
+
+/** The initiative icon, chosen from a grid rather than a list of names. */
+function IconField({ field, defaultValue }: { field: Field; defaultValue: string }) {
+  const [value, setValue] = useState(defaultValue || "Sparkles");
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-2 text-sm font-semibold">{field.label}</legend>
+      <div className="grid grid-cols-6 gap-1.5">
+        {ICON_NAMES.map((name) => {
+          const Icon = resolveIcon(name);
+          const active = value === name;
+          return (
+            <label
+              key={name}
+              title={name}
+              className={cn(
+                "grid aspect-square cursor-pointer place-items-center rounded-lg border transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
+                active ? "border-primary bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground"
+              )}
+            >
+              <input
+                type="radio"
+                name={field.name}
+                value={name}
+                checked={active}
+                onChange={() => setValue(name)}
+                className="sr-only"
+              />
+              <Icon className="size-4" aria-hidden="true" />
+              <span className="sr-only">{name}</span>
+            </label>
+          );
+        })}
+      </div>
+      <FieldHelp field={field} />
+    </fieldset>
+  );
+}
+
+/** Plain inputs: text, numbers, links, dates and longer notes. */
+function PlainField({ field, defaultValue, error }: { field: Field; defaultValue: string; error?: string }) {
+  const describedBy = field.help ? `${field.name}-help` : undefined;
+  return (
+    <div className="flex flex-col gap-2">
+      <FieldLabel field={field} htmlFor={field.name} />
+      {field.type === "textarea" ? (
+        <Textarea
+          id={field.name}
+          name={field.name}
+          defaultValue={defaultValue}
+          required={field.required}
+          maxLength={field.maxLength}
+          placeholder={field.placeholder}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy}
+          rows={4}
+          className="bg-background"
+        />
+      ) : (
+        <Input
+          id={field.name}
+          name={field.name}
+          type={
+            field.type === "number"
+              ? "number"
+              : field.type === "url"
+                ? "url"
+                : field.type === "date"
+                  ? "date"
+                  : "text"
+          }
+          defaultValue={defaultValue}
+          required={field.required}
+          maxLength={field.maxLength}
+          placeholder={field.placeholder}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy}
+          className="h-10 bg-background"
+        />
+      )}
+      {error && <FieldError message={error} />}
+      <FieldHelp field={field} />
+    </div>
   );
 }
 
@@ -105,137 +246,211 @@ export default function EntryForm({
   action,
   initial,
   images,
+  files,
   submitLabel,
+  viewHref,
 }: Props) {
   const [state, formAction] = useActionState<FormState, FormData>(action, {});
   const errors = state.fieldErrors ?? {};
+  const form = useRef<HTMLFormElement>(null);
+  const dirty = useRef(false);
+
+  /* Leaving with unsaved writing asks first. */
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => {
+      if (dirty.current) event.preventDefault();
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, []);
 
   const value = (name: string) => {
     const raw = initial?.[name];
     return raw === null || raw === undefined ? "" : String(raw);
   };
 
-  return (
-    <form action={formAction} className="flex flex-col gap-6">
-      {spec.fields.map((field) => {
-        const error = errors[field.name];
-        const describedBy = field.help ? `${field.name}-help` : undefined;
-
-        if (field.type === "image") {
+  const render = (field: Field) => {
+    const error = errors[field.name];
+    switch (field.type) {
+      case "image":
+        return <ImageField key={field.name} field={field} defaultValue={value(field.name)} error={error} />;
+      case "gallery":
+        return (
+          <GalleryField
+            key={field.name}
+            field={field}
+            defaultValue={Array.isArray(initial?.[field.name]) ? (initial[field.name] as string[]) : []}
+            error={error}
+          />
+        );
+      case "attachment":
+        return <AttachmentField key={field.name} field={field} defaultValue={value(field.name)} error={error} />;
+      case "richtext":
+        return (
+          <div key={field.name} className="flex flex-col gap-2">
+            <FieldLabel field={field} />
+            <RichTextField field={field} defaultValue={value(field.name)} error={error} />
+          </div>
+        );
+      case "choice":
+        return <ChoiceField key={field.name} field={field} defaultValue={value(field.name)} error={error} />;
+      case "icon":
+        return <IconField key={field.name} field={field} defaultValue={value(field.name)} />;
+      default:
+        if (field.appearance === "headline") {
           return (
-            <ImageField
+            <GrowingText
               key={field.name}
               field={field}
-              images={images}
               defaultValue={value(field.name)}
               error={error}
+              className="font-heading text-[2.4rem] font-medium leading-[1.12] tracking-[-0.02em] md:text-5xl"
             />
           );
         }
+        if (field.appearance === "lead") {
+          return (
+            <GrowingText
+              key={field.name}
+              field={field}
+              defaultValue={value(field.name)}
+              error={error}
+              className="text-lg leading-relaxed text-muted-foreground md:text-xl"
+            />
+          );
+        }
+        return <PlainField key={field.name} field={field} defaultValue={value(field.name)} error={error} />;
+    }
+  };
 
-        return (
-          <div key={field.name} className="flex flex-col gap-2">
-            <Label htmlFor={field.name}>
-              {field.label}
-              {!field.required && (
-                <span className="text-xs font-medium text-muted-foreground">
-                  optional
-                </span>
-              )}
-            </Label>
-
-            {field.type === "textarea" ? (
-              <Textarea
-                id={field.name}
-                name={field.name}
-                defaultValue={value(field.name)}
-                required={field.required}
-                maxLength={field.maxLength}
-                placeholder={field.placeholder}
-                aria-invalid={error ? true : undefined}
-                aria-describedby={describedBy}
-                rows={4}
-              />
-            ) : field.type === "icon" ? (
-              <Select
-                id={field.name}
-                name={field.name}
-                defaultValue={value(field.name) || "Sparkles"}
-                aria-describedby={describedBy}
-              >
-                {ICON_NAMES.map((name) => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
-                ))}
-              </Select>
-            ) : (
-              <Input
-                id={field.name}
-                name={field.name}
-                type={
-                  field.type === "number"
-                    ? "number"
-                    : field.type === "url"
-                      ? "url"
-                      : "text"
-                }
-                defaultValue={value(field.name)}
-                required={field.required}
-                maxLength={field.maxLength}
-                placeholder={field.placeholder}
-                aria-invalid={error ? true : undefined}
-                aria-describedby={describedBy}
-              />
-            )}
-
-            {field.help && (
-              <p id={`${field.name}-help`} className="text-xs text-muted-foreground">
-                {field.help}
-              </p>
-            )}
-            {error && <FieldError message={error} />}
-          </div>
-        );
-      })}
-
-      <label className="flex items-start gap-3 rounded-xl border bg-card p-4 cursor-pointer">
+  const published = (
+    <label className="flex cursor-pointer items-start gap-3">
+      <span className="relative mt-0.5 inline-flex shrink-0">
         <input
           type="checkbox"
           name="published"
           defaultChecked={initial ? Boolean(initial.published) : true}
-          className="mt-0.5 size-4 accent-primary cursor-pointer"
+          className="peer sr-only"
         />
-        <span>
-          <span className="block text-sm font-semibold">Show on the website</span>
-          <span className="block text-xs text-muted-foreground mt-0.5">
-            Uncheck to keep this saved but hidden from visitors.
-          </span>
+        <span className="h-6 w-10 rounded-full bg-muted-foreground/30 transition-colors peer-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2" />
+        <span className="absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
+      </span>
+      <span>
+        <span className="block text-sm font-semibold">Show on the website</span>
+        <span className="mt-0.5 block text-xs text-muted-foreground">
+          Turn off to keep it saved but hidden from visitors.
         </span>
-      </label>
+      </span>
+    </label>
+  );
 
-      {state.error && (
-        <p
-          role="alert"
-          className="flex items-start gap-2 rounded-lg bg-destructive/10 px-3 py-2.5 text-sm font-medium text-destructive"
-        >
-          <AlertCircle className="size-4 shrink-0 mt-0.5" aria-hidden="true" />
-          {state.error}
-        </p>
-      )}
+  const formError = state.error && (
+    <p
+      role="alert"
+      className="flex items-start gap-2 rounded-lg bg-destructive/10 px-3 py-2.5 text-sm font-medium text-destructive"
+    >
+      <AlertCircle className="size-4 shrink-0 mt-0.5" aria-hidden="true" />
+      {state.error}
+    </p>
+  );
+  const hasFieldErrors = Object.keys(errors).length > 0;
+  const fieldErrorNote = hasFieldErrors && (
+    <p role="alert" className="flex items-start gap-2 rounded-lg bg-destructive/10 px-3 py-2.5 text-sm font-medium text-destructive">
+      <AlertCircle className="size-4 shrink-0 mt-0.5" aria-hidden="true" />
+      Some fields need attention — they’re marked in red.
+    </p>
+  );
 
-      <div className="flex items-center gap-3 pt-2">
-        <SubmitButton label={submitLabel} />
-        <Button
-          variant="ghost"
-          size="lg"
-          className="h-11 font-semibold"
-          nativeButton={false}
-          render={<Link href={`/admin/content/${spec.slug}`} />}
-        >
-          Cancel
-        </Button>
-      </div>
-    </form>
+  const cancel = (
+    <Button
+      variant="ghost"
+      size="lg"
+      className="h-11 font-semibold"
+      nativeButton={false}
+      render={<Link href={`/admin/content/${spec.slug}`} />}
+    >
+      Cancel
+    </Button>
+  );
+
+  const formProps = {
+    ref: form,
+    action: formAction,
+    onInput: () => (dirty.current = true),
+    onChange: () => (dirty.current = true),
+    onSubmit: () => (dirty.current = false),
+  };
+
+  if (spec.article) {
+    const main = spec.fields.filter((field) => field.placement !== "side");
+    const side = spec.fields.filter((field) => field.placement === "side");
+    const cover = main.find((field) => field.appearance === "cover");
+    const writing = main.filter((field) => field !== cover);
+
+    return (
+      <EditorProvider images={images} files={files} titleField={spec.titleField}>
+        <form {...formProps} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
+          <div className="min-w-0 overflow-hidden rounded-2xl border bg-card shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+            {cover && render(cover)}
+            <div className="flex flex-col gap-8 px-6 py-8 md:px-8">
+              {writing.map(render)}
+            </div>
+          </div>
+
+          <aside className="flex flex-col gap-4 lg:sticky lg:top-6">
+            <div className="flex flex-col gap-4 rounded-2xl border bg-card p-5">
+              {published}
+              {fieldErrorNote}
+              {formError}
+              <div className="flex items-center gap-2">
+                <SubmitButton label={submitLabel} className="grow" />
+                {cancel}
+              </div>
+              {viewHref && (
+                <a
+                  href={viewHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline underline-offset-4"
+                >
+                  <ExternalLink className="size-3.5" aria-hidden="true" />
+                  View this page on the website
+                </a>
+              )}
+            </div>
+            <div className="flex flex-col gap-5 rounded-2xl border bg-card p-5">
+              <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                Details
+              </p>
+              {side.map(render)}
+            </div>
+          </aside>
+
+          {/* On a phone the side panel comes after the whole story, so the
+              save button also rides along the bottom of the screen. */}
+          <div className="sticky bottom-0 z-20 -mx-5 flex items-center gap-3 border-t bg-card/95 px-5 py-3 backdrop-blur-sm lg:hidden">
+            <SubmitButton label={submitLabel} className="grow" />
+            {cancel}
+          </div>
+        </form>
+      </EditorProvider>
+    );
+  }
+
+  return (
+    <EditorProvider images={images} files={files} titleField={spec.titleField}>
+      <form {...formProps} className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 rounded-2xl border bg-card p-6 shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+          {spec.fields.map(render)}
+        </div>
+        <div className="rounded-2xl border bg-card p-5">{published}</div>
+        {fieldErrorNote}
+        {formError}
+        <div className="flex items-center gap-3">
+          <SubmitButton label={submitLabel} />
+          {cancel}
+        </div>
+      </form>
+    </EditorProvider>
   );
 }

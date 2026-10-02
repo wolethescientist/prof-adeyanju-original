@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Counter from "@/app/components/Counter";
 import Reveal from "@/app/components/Reveal";
-import { PageHeader, SectionHeading } from "@/app/components/ui";
+import { Accent, PageHeader, SectionHeading } from "@/app/components/ui";
 import { getResearchAreas, getSiteImages } from "@/app/lib/content";
 
 export const metadata: Metadata = {
@@ -29,8 +29,7 @@ export default async function ResearchPage() {
         kicker="Research & Academia"
         title={
           <>
-            Two decades of{" "}
-            <span className="text-primary">intelligent systems research</span>
+            Two decades of <Accent>intelligent systems research</Accent>
           </>
         }
         intro="With over 970 citations across peer-reviewed journals and conference papers, his research bridges artificial intelligence and African language technology — from Yoruba handwriting corpora to automated grading systems."
@@ -42,14 +41,11 @@ export default async function ResearchPage() {
           <div className="border-t">
             {research.map((r, i) => (
               <Reveal key={r.id} delay={i * 60}>
-                <div className="grid md:grid-cols-[4rem_1fr_1.2fr] gap-3 md:gap-10 items-baseline border-b py-8 px-2">
-                  <p className="text-sm font-bold text-primary/50 tabular-nums">
-                    {String(i + 1).padStart(2, "0")}
-                  </p>
-                  <h2 className="text-xl md:text-2xl font-bold tracking-tight">
+                <div className="grid md:grid-cols-[1fr_1.25fr] gap-3 md:gap-14 items-baseline border-b py-9 px-2">
+                  <h2 className="text-2xl md:text-3xl font-medium tracking-[-0.01em]">
                     {r.area}
                   </h2>
-                  <p className="text-sm md:text-base text-muted-foreground leading-relaxed font-medium">
+                  <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
                     {r.detail}
                   </p>
                 </div>
@@ -76,7 +72,7 @@ export default async function ResearchPage() {
                 sizes="(min-width: 768px) 50vw, 100vw"
                 className="relative rounded-[1.6rem] w-full object-cover shadow-[0_25px_50px_rgba(16,24,40,0.14)]"
               />
-              <figcaption className="relative mt-4 text-center text-xs font-semibold text-muted-foreground">
+              <figcaption className="relative mt-5 text-center font-mono text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground">
                 {photo.caption ??
                   "PhD in Computing — Robert Gordon University, Aberdeen (2011)"}
               </figcaption>

@@ -9,7 +9,7 @@ The site's content is managed through a built-in CMS at `/admin` — see
 cp .env.example .env.local   # fill in DATABASE_URL and AUTH_SECRET
 npm install
 npm run db:up                # Postgres in Docker
-npm run db:push              # create tables
+npm run db:migrate           # create tables
 npm run db:seed              # load content + first admin account
 npm run dev
 ```

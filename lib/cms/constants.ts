@@ -16,12 +16,20 @@ export const MAX_IMAGE_DIMENSION = 2560;
 export const MAX_REQUEST_BYTES = 4 * 1024 * 1024; // 4 MB
 export const MAX_REQUEST_LABEL = "4MB";
 
+/** PDFs can't be shrunk in the browser the way photos can, so this is their ceiling. */
+export const MAX_PDF_BYTES = MAX_REQUEST_BYTES;
+export const MAX_PDF_LABEL = MAX_REQUEST_LABEL;
+
 /** One wording for "too big", wherever that is caught. */
 export function imageTooLargeMessage(
   bytes: number,
   limitLabel: string,
-  kind = "image"
+  kind: "image" | "GIF" | "PDF" = "image"
 ) {
   const megabytes = (bytes / 1024 / 1024).toFixed(1);
-  return `This ${kind} is too large (${megabytes}MB). Please compress it to under ${limitLabel} and try again — most photo editors can save a smaller copy.`;
+  const tip =
+    kind === "PDF"
+      ? "most PDF tools have a “reduce file size” option"
+      : "most photo editors can save a smaller copy";
+  return `This ${kind} is too large (${megabytes}MB). Please compress it to under ${limitLabel} and try again — ${tip}.`;
 }

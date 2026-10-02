@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { Public_Sans, Space_Grotesk } from "next/font/google";
+import { Newsreader, Public_Sans } from "next/font/google";
 import "./globals.css";
 
 const publicSans = Public_Sans({ subsets: ["latin"], variable: "--font-public-sans" });
-const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" });
+const newsreader = Newsreader({ subsets: ["latin"], variable: "--font-newsreader" });
 
 /**
  * Last line of defence: this catches failures in the root layout itself, which
@@ -27,11 +27,11 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="en" className={`h-full antialiased ${publicSans.variable} ${spaceGrotesk.variable}`}>
+    <html lang="en" className={`h-full antialiased ${publicSans.variable} ${newsreader.variable}`}>
       <body className="min-h-full">
         <title>Something went wrong</title>
         <main className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-6 text-center">
-          <h1 className="text-2xl font-bold tracking-tight">Something went wrong</h1>
+          <h1 className="font-heading text-3xl font-medium tracking-tight">Something went wrong</h1>
           <p className="mt-3 text-sm font-medium leading-relaxed text-muted-foreground">
             The site hit an unexpected problem and could not finish loading.
             Please try again in a moment.

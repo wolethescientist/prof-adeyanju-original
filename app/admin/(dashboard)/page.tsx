@@ -1,16 +1,77 @@
 import Link from "next/link";
-import { ArrowRight, ImagePlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { desc, inArray } from "drizzle-orm";
+import { ArrowRight, FolderOpen, PenLine } from "lucide-react";
+import { db } from "@/db";
+import { media } from "@/db/schema";
 import { CONTENT_TYPES } from "@/lib/cms/registry";
 import { countEntries } from "@/lib/cms/entries";
 import { listMedia } from "@/lib/cms/media";
+import { mediaUrl } from "@/lib/cms/media-url";
 import { getCurrentUser } from "@/lib/auth/session";
-import ContentTypePicker from "@/app/admin/_components/ContentTypePicker";
+import { cn } from "@/lib/utils";
+import { SECTION_ICONS } from "@/app/admin/_components/section-icons";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyTable = any;
+
+/** The most recently edited articles across awards, press and initiatives. */
+async function recentStories(limit = 5) {
+  const articleTypes = CONTENT_TYPES.filter((type) => type.article);
+  const batches = await Promise.all(
+    articleTypes.map(async (type) => {
+      const table = type.table as AnyTable;
+      const rows = (await db
+        .select()
+        .from(table)
+        .orderBy(desc(table.updatedAt))
+        .limit(limit)) as Record<string, unknown>[];
+      return rows.map((row) => ({
+        type,
+        id: String(row.id),
+        title: String(row[type.titleField] ?? "Untitled"),
+        imageId: typeof row.imageId === "string" ? row.imageId : null,
+        published: Boolean(row.published),
+        updatedAt: row.updatedAt as Date,
+      }));
+    })
+  );
+  const stories = batches
+    .flat()
+    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    .slice(0, limit);
+
+  const ids = stories.map((story) => story.imageId).filter((id): id is string => Boolean(id));
+  const thumbs = new Map(
+    ids.length
+      ? (
+          await db
+            .select({ id: media.id, checksum: media.checksum })
+            .from(media)
+            .where(inArray(media.id, ids))
+        ).map((image) => [image.id, image])
+      : []
+  );
+  return stories.map((story) => ({
+    ...story,
+    thumb: story.imageId ? thumbs.get(story.imageId) ?? null : null,
+  }));
+}
+
+function ago(date: Date) {
+  const minutes = Math.round((Date.now() - date.getTime()) / 60_000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  const days = Math.round(hours / 24);
+  if (days < 30) return `${days} ${days === 1 ? "day" : "days"} ago`;
+  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
 
-  const [counts, images] = await Promise.all([
+  const [counts, library, stories] = await Promise.all([
     Promise.all(
       CONTENT_TYPES.map(async (type) => ({
         type,
@@ -18,93 +79,197 @@ export default async function DashboardPage() {
       }))
     ),
     listMedia(),
+    recentStories(),
   ]);
 
   const groups = [...new Set(CONTENT_TYPES.map((type) => type.group))];
-  const firstName = user?.name.split(" ")[0] ?? "there";
+  /* A person's first name; a shared team account ("Galaxy Backbone Media
+     Team") is just welcomed back. */
+  const words = user?.name.trim().split(/\s+/) ?? [];
+  const firstName = words.length > 0 && words.length <= 2 ? words[0] : null;
+  const articleTypes = CONTENT_TYPES.filter((type) => type.article);
+  const photos = library.filter((item) => item.mimeType.startsWith("image/")).length;
+  const pdfs = library.length - photos;
 
   return (
-    <div className="flex flex-col gap-9">
+    <div className="flex flex-col gap-12">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Welcome back, {firstName}.
+        <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          Site manager
+        </p>
+        <h1 className="mt-3 font-heading text-4xl md:text-5xl font-medium tracking-tight">
+          Welcome back
+          {firstName && (
+            <>
+              , <em className="italic font-normal text-primary">{firstName}</em>
+            </>
+          )}
+          .
         </h1>
-        <p className="mt-1.5 text-sm text-muted-foreground font-medium">
-          Choose a section to add or edit content. Changes appear on the website
-          as soon as you save.
+        <p className="mt-3 max-w-xl text-muted-foreground">
+          Post a new story or update any part of the website. Everything you save
+          appears on the site straight away.
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <ContentTypePicker />
-        <Button
-          variant="outline"
-          size="lg"
-          className="h-10 font-semibold bg-card"
-          nativeButton={false}
-          render={<Link href="/admin/media" />}
-        >
-          <ImagePlus data-icon="inline-start" />
-          Upload an image
-        </Button>
-      </div>
-
-      {groups.map((group) => (
-        <section key={group} className="flex flex-col gap-3">
-          <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
-            {group}
-          </h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {counts
-              .filter((entry) => entry.type.group === group)
-              .map(({ type, total, published }) => (
-                <Link
-                  key={type.slug}
-                  href={`/admin/content/${type.slug}`}
-                  className="group rounded-xl border bg-card p-5 transition-colors duration-150 hover:border-primary/40 hover:bg-accent/40"
+      <section aria-labelledby="write" className="flex flex-col gap-4">
+        <h2 id="write" className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          Write something new
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {articleTypes.map((type, i) => {
+            const Icon = SECTION_ICONS[type.icon];
+            return (
+              <Link
+                key={type.slug}
+                href={`/admin/content/${type.slug}/new`}
+                className={cn(
+                  "group relative flex flex-col overflow-hidden rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_35px_rgba(16,24,40,0.10)]",
+                  i === 0 ? "bg-ink text-white border-ink" : "bg-card"
+                )}
+              >
+                {i === 0 && <span className="foil absolute inset-x-0 top-0 h-[3px]" aria-hidden="true" />}
+                <span
+                  className={cn(
+                    "grid size-10 place-items-center rounded-xl",
+                    i === 0 ? "bg-white/10 text-[#f3dc9b]" : "bg-secondary text-primary"
+                  )}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-sm font-bold group-hover:text-primary transition-colors duration-150">
-                      {type.label}
-                    </h3>
+                  <Icon className="size-5" aria-hidden="true" />
+                </span>
+                <span className="mt-6 font-heading text-xl font-medium">
+                  New {type.singular.toLowerCase()}
+                </span>
+                <span className={cn("mt-1 text-sm", i === 0 ? "text-white/65" : "text-muted-foreground")}>
+                  {type.slug === "awards"
+                    ? "Photos, the full story and a PDF"
+                    : type.slug === "press"
+                      ? "An article or interview about him"
+                      : "A programme at Galaxy Backbone"}
+                </span>
+                <PenLine
+                  className={cn(
+                    "absolute right-5 top-5 size-4 transition-transform group-hover:-rotate-12",
+                    i === 0 ? "text-white/50" : "text-muted-foreground"
+                  )}
+                  aria-hidden="true"
+                />
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {stories.length > 0 && (
+        <section aria-labelledby="recent" className="flex flex-col gap-4">
+          <h2 id="recent" className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            Recently edited
+          </h2>
+          <ul className="overflow-hidden rounded-2xl border bg-card divide-y">
+            {stories.map((story) => {
+              const Icon = SECTION_ICONS[story.type.icon];
+              return (
+                <li key={`${story.type.slug}-${story.id}`}>
+                  <Link
+                    href={`/admin/content/${story.type.slug}/${story.id}`}
+                    className="group flex items-center gap-4 px-4 py-3 hover:bg-accent/40 transition-colors"
+                  >
+                    {story.thumb ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={mediaUrl(story.thumb)!}
+                        alt=""
+                        className="h-12 w-16 shrink-0 rounded-lg border object-cover object-[50%_22%]"
+                      />
+                    ) : (
+                      <span className="grid h-12 w-16 shrink-0 place-items-center rounded-lg bg-ink text-gold">
+                        <Icon className="size-4" aria-hidden="true" />
+                      </span>
+                    )}
+                    <span className="min-w-0 grow">
+                      <span className="block truncate font-heading text-lg leading-snug group-hover:text-primary transition-colors">
+                        {story.title}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {story.type.singular} · edited {ago(story.updatedAt)}
+                        {!story.published && " · hidden"}
+                      </span>
+                    </span>
                     <ArrowRight
-                      className="size-4 shrink-0 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-primary"
+                      className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
                       aria-hidden="true"
                     />
-                  </div>
-                  <p className="mt-3 text-2xl font-bold tabular-nums">{total}</p>
-                  <p className="mt-0.5 text-xs font-medium text-muted-foreground">
-                    {total === published
-                      ? `${total === 1 ? "entry" : "entries"}, all visible`
-                      : `${published} visible · ${total - published} hidden`}
-                  </p>
-                </Link>
-              ))}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
+      {groups.map((group) => (
+        <section key={group} className="flex flex-col gap-4">
+          <h2 className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            {group}
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {counts
+              .filter((entry) => entry.type.group === group)
+              .map(({ type, total, published }) => {
+                const Icon = SECTION_ICONS[type.icon];
+                return (
+                  <Link
+                    key={type.slug}
+                    href={`/admin/content/${type.slug}`}
+                    className="group flex items-center gap-4 rounded-2xl border bg-card p-4 transition-colors duration-150 hover:border-primary/40"
+                  >
+                    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary">
+                      <Icon className="size-5" aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 grow">
+                      <span className="block truncate text-sm font-semibold group-hover:text-primary transition-colors">
+                        {type.label}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {total === published
+                          ? `${total} ${total === 1 ? "entry" : "entries"}`
+                          : `${published} shown · ${total - published} hidden`}
+                      </span>
+                    </span>
+                    <ArrowRight
+                      className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                );
+              })}
           </div>
         </section>
       ))}
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
-          Images
+      <section className="flex flex-col gap-4">
+        <h2 className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          Library
         </h2>
         <Link
           href="/admin/media"
-          className="group rounded-xl border bg-card p-5 transition-colors duration-150 hover:border-primary/40 hover:bg-accent/40 sm:max-w-xs"
+          className="group flex items-center gap-4 rounded-2xl border bg-card p-4 transition-colors duration-150 hover:border-primary/40 sm:max-w-sm"
         >
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="text-sm font-bold group-hover:text-primary transition-colors duration-150">
-              Image library
-            </h3>
-            <ArrowRight
-              className="size-4 shrink-0 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-primary"
-              aria-hidden="true"
-            />
-          </div>
-          <p className="mt-3 text-2xl font-bold tabular-nums">{images.length}</p>
-          <p className="mt-0.5 text-xs font-medium text-muted-foreground">
-            {images.length === 1 ? "image" : "images"} uploaded
-          </p>
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary">
+            <FolderOpen className="size-5" aria-hidden="true" />
+          </span>
+          <span className="grow">
+            <span className="block text-sm font-semibold group-hover:text-primary transition-colors">
+              Photos &amp; PDFs
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              {photos} {photos === 1 ? "photo" : "photos"} · {pdfs} {pdfs === 1 ? "PDF" : "PDFs"}
+            </span>
+          </span>
+          <ArrowRight
+            className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+            aria-hidden="true"
+          />
         </Link>
       </section>
     </div>

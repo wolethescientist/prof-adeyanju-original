@@ -52,14 +52,15 @@ export default function Nav() {
       >
         <Link
           href="/"
-          className="font-heading font-bold text-lg text-foreground hover:text-primary transition-colors duration-200"
+          className="font-heading font-semibold text-xl tracking-tight text-foreground hover:text-primary transition-colors duration-200"
         >
           I.A. Adeyanju<span className="text-primary">.</span>
         </Link>
 
         <ul className="hidden md:flex items-center gap-7">
           {links.map((l) => {
-            const active = pathname === l.href;
+            /* An article page lights up the section it belongs to. */
+            const active = pathname === l.href || pathname.startsWith(`${l.href}/`);
             return (
               <li key={l.href}>
                 <Link

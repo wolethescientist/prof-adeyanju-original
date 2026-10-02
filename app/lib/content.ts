@@ -5,14 +5,11 @@ import { db } from "@/db";
 import { mediaUrl } from "@/lib/cms/media-url";
 import { SLOTS, type ResolvedImage } from "@/lib/cms/slots";
 import {
-  awards,
   educationEntries,
   glanceItems,
   honours,
   impactStats,
-  initiatives,
   marqueeItems,
-  pressItems,
   researchAreas,
   siteImages,
   stats,
@@ -24,6 +21,8 @@ import {
  * old hardcoded arrays.
  *
  * Every getter returns only published rows, in the order the media team set.
+ * Awards, press coverage and initiatives are articles with pages of their
+ * own; their getters live in ./articles.ts.
  * The pages that use these are statically rendered and revalidated on demand,
  * so reads do not hit the database on each visit — see `revalidates` in
  * lib/cms/registry.ts.
@@ -128,14 +127,6 @@ export async function getTimeline() {
     .orderBy(asc(timelineEntries.position));
 }
 
-export async function getInitiatives() {
-  return db.query.initiatives.findMany({
-    where: eq(initiatives.published, true),
-    orderBy: asc(initiatives.position),
-    with: { image: { columns: { id: true, checksum: true, alt: true } } },
-  });
-}
-
 export async function getResearchAreas() {
   return db
     .select({
@@ -173,22 +164,6 @@ export async function getHonours() {
     .from(honours)
     .where(eq(honours.published, true))
     .orderBy(asc(honours.position));
-}
-
-export async function getAwards() {
-  return db.query.awards.findMany({
-    where: eq(awards.published, true),
-    orderBy: asc(awards.position),
-    with: { image: { columns: { id: true, checksum: true, alt: true } } },
-  });
-}
-
-export async function getPress() {
-  return db.query.pressItems.findMany({
-    where: eq(pressItems.published, true),
-    orderBy: asc(pressItems.position),
-    with: { image: { columns: { id: true, checksum: true, alt: true } } },
-  });
 }
 
 export async function getGlance() {

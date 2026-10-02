@@ -6,10 +6,11 @@
  * They all share `position` (manual ordering) and `published` (staging), which
  * is what lets a single generic admin screen drive all of them.
  */
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   boolean,
   customType,
+  date,
   integer,
   pgEnum,
   pgTable,
@@ -87,6 +88,34 @@ const contentColumns = {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 };
 
+/**
+ * Columns that turn a row into an article with its own page on the site: an
+ * address, the full story, more photos, and an optional PDF (a citation, a
+ * certificate, a press release).
+ *
+ * `slug` is set once, from the title, when the entry is created and is not
+ * changed afterwards, so shared links keep working when a title is edited.
+ * `body` is HTML from the CMS editor, sanitised on save and again on render
+ * (lib/cms/rich-text.ts). The gallery is an ordered list of media ids rather
+ * than a join table: order matters, it is only ever read whole, and ids whose
+ * image has since been deleted are simply skipped.
+ *
+ * A function rather than a shared object: each table needs its own column
+ * builders, or the unique constraint on `slug` gets one name for all three.
+ */
+const articleColumns = () => ({
+  slug: text("slug").notNull().unique(),
+  body: text("body"),
+  galleryIds: uuid("gallery_ids").array().notNull().default(sql`'{}'::uuid[]`),
+  attachmentId: uuid("attachment_id").references(() => media.id, {
+    onDelete: "set null",
+  }),
+});
+
+/** Who an award was given to. Drives the label and filter on the site. */
+export const AWARD_RECIPIENTS = ["personal", "gbb"] as const;
+export type AwardRecipient = (typeof AWARD_RECIPIENTS)[number];
+
 /** The animated counters in the dark band on the home page. */
 export const stats = pgTable("stats", {
   ...contentColumns,
@@ -141,6 +170,7 @@ export const timelineEntries = pgTable("timeline_entries", {
 /** Flagship programmes on /impact and the home page. */
 export const initiatives = pgTable("initiatives", {
   ...contentColumns,
+  ...articleColumns(),
   title: text("title").notNull(),
   detail: text("detail").notNull(),
   /* Name of a Lucide icon, resolved through the allow-list in
@@ -174,24 +204,36 @@ export const honours = pgTable("honours", {
 });
 
 /**
- * Awards won by Galaxy Backbone. This is the "achievements" table the media
- * team will use most, so it takes an image (the award photo or certificate)
- * and a longer optional description.
+ * Awards — to Prof. Adeyanju personally or to Galaxy Backbone under his
+ * leadership. This is the table the media team uses most: each award is an
+ * article with a cover photo, a short summary for the cards, the full story,
+ * a gallery and an optional PDF.
  */
 export const awards = pgTable("awards", {
   ...contentColumns,
+  ...articleColumns(),
   award: text("award").notNull(),
   year: text("year").notNull(),
+  recipient: text("recipient", { enum: AWARD_RECIPIENTS }).notNull().default("gbb"),
+  awardedBy: text("awarded_by"),
+  awardedOn: date("awarded_on"),
+  /* The short summary shown on the cards. */
   detail: text("detail"),
   imageId: uuid("image_id").references(() => media.id, { onDelete: "set null" }),
 });
 
-/** Press coverage on /recognition and the home page. */
+/**
+ * Press coverage on /recognition and the home page. Each item has its own
+ * page; the link to the original is optional so print-only coverage can be
+ * shared as a scanned PDF instead.
+ */
 export const pressItems = pgTable("press_items", {
   ...contentColumns,
+  ...articleColumns(),
   outlet: text("outlet").notNull(),
   title: text("title").notNull(),
-  href: text("href").notNull(),
+  href: text("href"),
+  publishedOn: date("published_on"),
   description: text("description"),
   imageId: uuid("image_id").references(() => media.id, { onDelete: "set null" }),
 });
@@ -218,11 +260,29 @@ export const sessionRelations = relations(sessions, ({ one }) => ({
 }));
 
 export const initiativeRelations = relations(initiatives, ({ one }) => ({
-  image: one(media, { fields: [initiatives.imageId], references: [media.id] }),
+  image: one(media, {
+    fields: [initiatives.imageId],
+    references: [media.id],
+    relationName: "initiative_image",
+  }),
+  attachment: one(media, {
+    fields: [initiatives.attachmentId],
+    references: [media.id],
+    relationName: "initiative_attachment",
+  }),
 }));
 
 export const awardRelations = relations(awards, ({ one }) => ({
-  image: one(media, { fields: [awards.imageId], references: [media.id] }),
+  image: one(media, {
+    fields: [awards.imageId],
+    references: [media.id],
+    relationName: "award_image",
+  }),
+  attachment: one(media, {
+    fields: [awards.attachmentId],
+    references: [media.id],
+    relationName: "award_attachment",
+  }),
 }));
 
 export const siteImageRelations = relations(siteImages, ({ one }) => ({
@@ -230,7 +290,16 @@ export const siteImageRelations = relations(siteImages, ({ one }) => ({
 }));
 
 export const pressRelations = relations(pressItems, ({ one }) => ({
-  image: one(media, { fields: [pressItems.imageId], references: [media.id] }),
+  image: one(media, {
+    fields: [pressItems.imageId],
+    references: [media.id],
+    relationName: "press_image",
+  }),
+  attachment: one(media, {
+    fields: [pressItems.attachmentId],
+    references: [media.id],
+    relationName: "press_attachment",
+  }),
 }));
 
 export type User = typeof users.$inferSelect;

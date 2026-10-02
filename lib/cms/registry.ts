@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  AWARD_RECIPIENTS,
   awards,
   educationEntries,
   glanceItems,
@@ -18,11 +19,11 @@ import { ICON_NAMES } from "@/app/lib/icons";
 /**
  * The registry every admin screen is built from.
  *
- * Rather than hand-writing ten near-identical CRUD pages, each section of the
- * public site is described once here — its table, its fields, and which pages
- * to refresh when it changes — and a single set of generic screens renders
- * them all. Adding a new section to the CMS later means adding one entry to
- * this file, not building another page.
+ * Rather than hand-writing a dozen near-identical CRUD pages, each section of
+ * the public site is described once here — its table, its fields, and which
+ * pages to refresh when it changes — and a single set of generic screens
+ * renders them all. Adding a new section to the CMS later means adding one
+ * entry to this file, not building another page.
  */
 
 export type FieldType =
@@ -31,7 +32,16 @@ export type FieldType =
   | "url"
   | "number"
   | "icon"
-  | "image";
+  | "image"
+  /** Formatted article text from the editor. Stored as sanitised HTML. */
+  | "richtext"
+  /** An ordered list of photos. */
+  | "gallery"
+  /** A PDF visitors can download. */
+  | "attachment"
+  | "date"
+  /** One of a few fixed options, shown as buttons. */
+  | "choice";
 
 export type Field = {
   name: string;
@@ -41,15 +51,43 @@ export type Field = {
   placeholder?: string;
   help?: string;
   maxLength?: number;
+  /** For "choice" fields. The first option is the default. */
+  options?: { value: string; label: string }[];
+  /**
+   * Article sections lay their form out like the page it produces: the
+   * writing in a main column, the facts about it in a side column.
+   */
+  placement?: "main" | "side";
+  /**
+   * How a main-column field is set: the title as a headline, the summary as
+   * a lead paragraph, the cover photo full width.
+   */
+  appearance?: "headline" | "lead" | "cover";
 };
+
+/** Icons for the sidebar and dashboard, named from lucide-react. */
+export type SectionIcon =
+  | "Award"
+  | "Newspaper"
+  | "Rocket"
+  | "Gauge"
+  | "Medal"
+  | "Route"
+  | "Microscope"
+  | "GraduationCap"
+  | "ListChecks"
+  | "Hash"
+  | "MoveHorizontal"
+  | "Images";
 
 export type ContentType = {
   slug: string;
   label: string;
   singular: string;
   description: string;
+  icon: SectionIcon;
   /* Grouping for the sidebar/dropdown. */
-  group: "Achievements" | "Profile" | "Home page" | "Page images";
+  group: "Stories" | "Profile" | "Highlights" | "Page images";
   table: TableFor;
   fields: Field[];
   /** Field shown as the headline in the list view. */
@@ -58,6 +96,11 @@ export type ContentType = {
   subtitleField?: string;
   /** Public routes to revalidate after any change here. */
   revalidates: string[];
+  /**
+   * Entries are articles with their own page at `${path}/${slug}`. The slug
+   * is made from `titleField` when the entry is created.
+   */
+  article?: { path: string };
   /**
    * A fixed set of rows the team edits but cannot add to, reorder or delete —
    * used where the design dictates exactly which slots exist.
@@ -81,26 +124,84 @@ type TableFor =
   | typeof glanceItems
   | typeof marqueeItems;
 
+/** Labels for an award's recipient, in the order the editor offers them. */
+export const RECIPIENT_LABELS: Record<(typeof AWARD_RECIPIENTS)[number], string> = {
+  personal: "Prof. Adeyanju",
+  gbb: "Galaxy Backbone",
+};
+
+const story: Field = {
+  name: "body",
+  label: "Full story",
+  type: "richtext",
+  placement: "main",
+  maxLength: 100_000,
+  placeholder: "Tell the story — who presented it, where, and why it matters…",
+};
+
+const gallery: Field = {
+  name: "galleryIds",
+  label: "More photos",
+  type: "gallery",
+  placement: "main",
+  help: "Shown as a gallery on the page. Visitors can click any photo to see it full size.",
+};
+
 export const CONTENT_TYPES: ContentType[] = [
   {
     slug: "awards",
-    label: "Awards & Achievements",
+    label: "Awards",
     singular: "Award",
     description:
-      "Awards won by Galaxy Backbone under his leadership. Shown on the Recognition page.",
-    group: "Achievements",
+      "Awards to Prof. Adeyanju and to Galaxy Backbone under his leadership. Each one has its own page, linked from the Recognition page.",
+    icon: "Award",
+    group: "Stories",
     table: awards,
     titleField: "award",
     subtitleField: "year",
     revalidates: ["/recognition", "/"],
+    article: { path: "/recognition/awards" },
     fields: [
+      {
+        name: "imageId",
+        label: "Cover photo",
+        type: "image",
+        placement: "main",
+        appearance: "cover",
+        help: "The main photo — shown on the award's card and across the top of its page.",
+      },
       {
         name: "award",
         label: "Award name",
         type: "text",
         required: true,
         maxLength: 300,
-        placeholder: "Best IT Service Provider Company of the Year",
+        placement: "main",
+        appearance: "headline",
+        placeholder: "Name of the award",
+      },
+      {
+        name: "detail",
+        label: "Summary",
+        type: "textarea",
+        maxLength: 600,
+        placement: "main",
+        appearance: "lead",
+        placeholder: "One or two sentences on what the award recognises.",
+        help: "Shown on the award's card and at the top of its page.",
+      },
+      story,
+      gallery,
+      {
+        name: "recipient",
+        label: "Awarded to",
+        type: "choice",
+        required: true,
+        placement: "side",
+        options: AWARD_RECIPIENTS.map((value) => ({
+          value,
+          label: RECIPIENT_LABELS[value],
+        })),
       },
       {
         name: "year",
@@ -108,20 +209,29 @@ export const CONTENT_TYPES: ContentType[] = [
         type: "text",
         required: true,
         maxLength: 20,
-        placeholder: "2025",
+        placement: "side",
+        placeholder: "e.g. 2026",
       },
       {
-        name: "detail",
-        label: "Description",
-        type: "textarea",
-        maxLength: 1000,
-        help: "Optional. A sentence or two about what the award recognises.",
+        name: "awardedOn",
+        label: "Date presented",
+        type: "date",
+        placement: "side",
       },
       {
-        name: "imageId",
-        label: "Photo or certificate",
-        type: "image",
-        help: "Optional. A photo of the award presentation or the certificate.",
+        name: "awardedBy",
+        label: "Presented by",
+        type: "text",
+        maxLength: 200,
+        placement: "side",
+        placeholder: "Organisation or event",
+      },
+      {
+        name: "attachmentId",
+        label: "PDF",
+        type: "attachment",
+        placement: "side",
+        help: "A citation, certificate or press release visitors can download.",
       },
     ],
   },
@@ -130,20 +240,22 @@ export const CONTENT_TYPES: ContentType[] = [
     label: "Press coverage",
     singular: "Press item",
     description:
-      "News articles and interviews. Shown on the Recognition page and the home page.",
-    group: "Achievements",
+      "News articles and interviews. Each one has its own page, shown on the Recognition page and the home page.",
+    icon: "Newspaper",
+    group: "Stories",
     table: pressItems,
     titleField: "title",
     subtitleField: "outlet",
     revalidates: ["/recognition", "/"],
+    article: { path: "/recognition/press" },
     fields: [
       {
-        name: "outlet",
-        label: "Publication",
-        type: "text",
-        required: true,
-        maxLength: 100,
-        placeholder: "BusinessDay",
+        name: "imageId",
+        label: "Cover photo",
+        type: "image",
+        placement: "main",
+        appearance: "cover",
+        help: "Shown on the card and across the top of the page.",
       },
       {
         name: "title",
@@ -151,28 +263,54 @@ export const CONTENT_TYPES: ContentType[] = [
         type: "text",
         required: true,
         maxLength: 400,
-        placeholder: "Galaxy Backbone at 20: The Quiet Architecture...",
-      },
-      {
-        name: "href",
-        label: "Link to the article",
-        type: "url",
-        required: true,
-        placeholder: "https://businessday.ng/...",
+        placement: "main",
+        appearance: "headline",
+        placeholder: "Headline of the article",
       },
       {
         name: "description",
-        label: "Description",
+        label: "Summary",
         type: "textarea",
         maxLength: 1000,
-        placeholder: "A sentence of context about this coverage.",
-        help: "Optional. Shown on the website beneath this entry.",
+        placement: "main",
+        appearance: "lead",
+        placeholder: "A sentence or two on what the coverage says.",
+        help: "Shown on the card and at the top of the page.",
       },
       {
-        name: "imageId",
-        label: "Image",
-        type: "image",
-        help: "Optional.",
+        ...story,
+        label: "Story or excerpt",
+        placeholder: "Quote or summarise the coverage. Visitors can follow the link to read the original…",
+      },
+      gallery,
+      {
+        name: "outlet",
+        label: "Publication",
+        type: "text",
+        required: true,
+        maxLength: 100,
+        placement: "side",
+        placeholder: "BusinessDay",
+      },
+      {
+        name: "publishedOn",
+        label: "Date published",
+        type: "date",
+        placement: "side",
+      },
+      {
+        name: "href",
+        label: "Link to the original",
+        type: "url",
+        placement: "side",
+        placeholder: "https://businessday.ng/...",
+      },
+      {
+        name: "attachmentId",
+        label: "PDF",
+        type: "attachment",
+        placement: "side",
+        help: "A scan of the printed article, for coverage that isn't online.",
       },
     ],
   },
@@ -181,35 +319,60 @@ export const CONTENT_TYPES: ContentType[] = [
     label: "Initiatives",
     singular: "Initiative",
     description:
-      "Flagship programmes such as 1Government Cloud and Project 774. Shown on the Impact page.",
-    group: "Achievements",
+      "Flagship programmes such as 1Government Cloud and Project 774. Each one has its own page, linked from the Impact page.",
+    icon: "Rocket",
+    group: "Stories",
     table: initiatives,
     titleField: "title",
     revalidates: ["/impact", "/"],
+    article: { path: "/impact/initiatives" },
     fields: [
+      {
+        name: "imageId",
+        label: "Cover photo",
+        type: "image",
+        placement: "main",
+        appearance: "cover",
+        help: "Shown on the card and across the top of the page.",
+      },
       {
         name: "title",
         label: "Initiative name",
         type: "text",
         required: true,
         maxLength: 200,
-        placeholder: "1Government Cloud",
+        placement: "main",
+        appearance: "headline",
+        placeholder: "Name of the initiative",
       },
       {
         name: "detail",
-        label: "Description",
+        label: "Summary",
         type: "textarea",
         required: true,
         maxLength: 1000,
+        placement: "main",
+        appearance: "lead",
+        placeholder: "What it is and what it has delivered, in a sentence or two.",
+        help: "Shown on the card and at the top of the page.",
       },
+      story,
+      gallery,
       {
         name: "icon",
         label: "Icon",
         type: "icon",
         required: true,
-        help: "Shown beside the initiative in some layouts.",
+        placement: "side",
+        help: "Shown on the initiative's card when it has no cover photo.",
       },
-      { name: "imageId", label: "Image", type: "image", help: "Optional." },
+      {
+        name: "attachmentId",
+        label: "PDF",
+        type: "attachment",
+        placement: "side",
+        help: "A brochure, report or factsheet visitors can download.",
+      },
     ],
   },
   {
@@ -218,7 +381,8 @@ export const CONTENT_TYPES: ContentType[] = [
     singular: "Number",
     description:
       "The four counters across the top of the Impact page. Separate from the home page's headline numbers.",
-    group: "Achievements",
+    icon: "Gauge",
+    group: "Highlights",
     table: impactStats,
     titleField: "label",
     revalidates: ["/impact"],
@@ -262,6 +426,7 @@ export const CONTENT_TYPES: ContentType[] = [
     label: "Career journey",
     singular: "Chapter",
     description: "The chapters of his career, shown on the Journey page.",
+    icon: "Route",
     group: "Profile",
     table: timelineEntries,
     titleField: "title",
@@ -304,6 +469,7 @@ export const CONTENT_TYPES: ContentType[] = [
     label: "Research areas",
     singular: "Research area",
     description: "Fields of research, shown on the Research page.",
+    icon: "Microscope",
     group: "Profile",
     table: researchAreas,
     titleField: "area",
@@ -331,6 +497,7 @@ export const CONTENT_TYPES: ContentType[] = [
     label: "Education",
     singular: "Qualification",
     description: "Degrees and academic posts, shown on the About page.",
+    icon: "GraduationCap",
     group: "Profile",
     table: educationEntries,
     titleField: "degree",
@@ -381,7 +548,8 @@ export const CONTENT_TYPES: ContentType[] = [
     singular: "Honour",
     description:
       "Fellowships, scholarships and personal recognition. Shown on the Recognition page.",
-    group: "Achievements",
+    icon: "Medal",
+    group: "Profile",
     table: honours,
     titleField: "text",
     revalidates: ["/recognition"],
@@ -410,7 +578,8 @@ export const CONTENT_TYPES: ContentType[] = [
     singular: "Number",
     description:
       "The large animated counters in the dark band on the home page only.",
-    group: "Home page",
+    icon: "Hash",
+    group: "Highlights",
     table: stats,
     titleField: "label",
     revalidates: ["/"],
@@ -454,6 +623,7 @@ export const CONTENT_TYPES: ContentType[] = [
     label: "At a glance",
     singular: "Row",
     description: "The summary card on the About page.",
+    icon: "ListChecks",
     group: "Profile",
     table: glanceItems,
     titleField: "label",
@@ -490,6 +660,7 @@ export const CONTENT_TYPES: ContentType[] = [
     singular: "Image slot",
     description:
       "The photographs built into the page designs. Choose which uploaded image fills each place — you cannot add or remove slots.",
+    icon: "Images",
     group: "Page images",
     table: siteImages,
     titleField: "label",
@@ -516,7 +687,8 @@ export const CONTENT_TYPES: ContentType[] = [
     label: "Scrolling keywords",
     singular: "Keyword",
     description: "The moving strip of keywords under the hero on the home page.",
-    group: "Home page",
+    icon: "MoveHorizontal",
+    group: "Highlights",
     table: marqueeItems,
     titleField: "text",
     revalidates: ["/"],
@@ -573,9 +745,30 @@ export function schemaFor(type: ContentType) {
         rule = field.required ? url : url.or(z.literal("")).nullable();
         break;
       }
-      case "image": {
-        /* An empty select posts "", which means "no image". */
+      case "image":
+      case "attachment": {
+        /* An empty picker posts "", which means "none". */
         rule = z.uuid().or(z.literal("")).nullable();
+        break;
+      }
+      case "gallery": {
+        rule = z
+          .array(z.uuid())
+          .max(40, `${field.label} can hold up to 40 photos.`);
+        break;
+      }
+      case "date": {
+        rule = z
+          .iso.date({ error: `${field.label} must be a valid date.` })
+          .or(z.literal(""))
+          .nullable();
+        break;
+      }
+      case "choice": {
+        const values = (field.options ?? []).map((option) => option.value);
+        rule = z.enum(values as [string, ...string[]], {
+          error: `Choose one of the options for ${field.label}.`,
+        });
         break;
       }
       case "icon": {

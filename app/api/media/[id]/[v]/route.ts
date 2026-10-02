@@ -31,6 +31,7 @@ export async function GET(
       mimeType: media.mimeType,
       byteSize: media.byteSize,
       checksum: media.checksum,
+      filename: media.filename,
     })
     .from(media)
     .where(eq(media.id, id))
@@ -38,12 +39,22 @@ export async function GET(
 
   if (!row) return new Response("Not found", { status: 404 });
 
-  return new Response(new Uint8Array(row.data), {
-    headers: {
-      "Content-Type": row.mimeType,
-      "Content-Length": String(row.byteSize),
-      "Cache-Control": "public, max-age=31536000, immutable",
-      ETag: `"${row.checksum}"`,
-    },
-  });
+  const headers: Record<string, string> = {
+    "Content-Type": row.mimeType,
+    "Content-Length": String(row.byteSize),
+    "Cache-Control": "public, max-age=31536000, immutable",
+    ETag: `"${row.checksum}"`,
+    /* Uploads are only ever served as what they were checked to be. */
+    "X-Content-Type-Options": "nosniff",
+  };
+
+  /* PDFs open in the browser's viewer, and save under their real name when
+     the visitor downloads them (the article page's link sets `download`). */
+  if (row.mimeType === "application/pdf") {
+    const ascii = row.filename.replace(/[^\x20-\x7e]|["\\]/g, "_");
+    headers["Content-Disposition"] =
+      `inline; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(row.filename)}`;
+  }
+
+  return new Response(new Uint8Array(row.data), { headers });
 }

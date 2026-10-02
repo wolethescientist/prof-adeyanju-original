@@ -8,25 +8,55 @@ immediately, with no redeploy and no developer involved.
 
 ## What the team can edit
 
-Every section that already existed on the site is editable. The sidebar — and
-the **section dropdown** at the top of each screen — lists them in three groups:
+### Stories — awards, press coverage and initiatives
+
+These three are **articles**. Each entry has its own page on the site, and a
+card that links to it:
+
+| Section | Card appears on | Its page |
+|---|---|---|
+| Awards | `/recognition`, home | `/recognition/awards/<address>` |
+| Press coverage | `/recognition`, home | `/recognition/press/<address>` |
+| Initiatives | `/impact`, home | `/impact/initiatives/<address>` |
+
+Writing one works like posting an article: drop in a **cover photo**, type the
+**title** and a short **summary** (both shown on the card), write the **full
+story** in the editor (headings, bold, lists, quotes, links), add **more
+photos** for the gallery, and attach a **PDF** — a citation, certificate, press
+release or scanned clipping — that visitors can download. Photos and PDFs are
+uploaded right there in the form; there is no need to visit the library first.
+
+On the page, visitors can click any photo to see it full size and step through
+the gallery, download the PDF, and copy a link to share.
+
+Each **award** says who received it — **Prof. Adeyanju** or **Galaxy
+Backbone**. Both kinds sit in one feed on the Recognition page; once both
+exist, filter buttons let visitors show one or the other. Each award can also
+record when it was presented and by whom.
+
+New stories go to the **top** of their list, so the newest leads. The ▲ ▼
+buttons change the order.
+
+An entry's page address is made from its title when it is first saved and does
+not change afterwards, so links that have been shared keep working even if the
+title is edited.
+
+### Everything else
 
 | Group | Section | Appears on |
 |---|---|---|
-| Achievements | Awards & Achievements | `/recognition` |
-| Achievements | Press coverage | `/recognition`, home |
-| Achievements | Initiatives | `/impact`, home |
-| Achievements | Impact numbers | `/impact` |
-| Achievements | Personal honours | `/recognition` |
+| Highlights | Impact numbers | `/impact` |
+| Highlights | Headline numbers | home |
+| Highlights | Scrolling keywords | home |
 | Profile | Career journey | `/journey` |
 | Profile | Research areas | `/research`, home |
 | Profile | Education | `/about` |
+| Profile | Personal honours | `/recognition` |
 | Profile | At a glance | `/about` |
-| Home page | Headline numbers | home |
-| Home page | Scrolling keywords | home |
 | Page images | Page images | home, `/impact`, `/research` |
 
-Plus an **Images** library, and **Team** (administrators only).
+Plus the **Library** of every uploaded photo and PDF, and **Team**
+(administrators only).
 
 **Page images** is a fixed list — the photographs built into the page designs
 (the hero portrait, the team photograph, and so on). The team chooses which
@@ -35,18 +65,17 @@ layouts define them. Leaving a slot empty falls back to the photograph the site
 originally shipped with, so a page can never end up with a hole in it.
 
 Every entry can be reordered (▲ ▼), hidden from the public site without being
-deleted (the eye icon), edited, or removed. Awards, press items and initiatives
-can carry an uploaded image.
+deleted (the eye icon), edited, or removed.
 
-Every section also has an optional **Description**. For press coverage,
-education and personal honours it appears on the website beneath the entry;
-for the headline numbers, impact numbers, at-a-glance rows and scrolling
-keywords the design has nowhere to show it, so it serves as a note for the
-team. The field's help text says which is which.
+Most sections also have an optional **Description**. For education and
+personal honours it appears on the website beneath the entry; for the headline
+numbers, impact numbers, at-a-glance rows and scrolling keywords the design
+has nowhere to show it, so it serves as a note for the team. The field's help
+text says which is which.
 
 ### Roles
 
-- **Editor** — adds and edits all content and images.
+- **Editor** — adds and edits all content, photos and PDFs.
 - **Administrator** — the same, plus adding, suspending and removing team
   members at `/admin/team`.
 
@@ -60,7 +89,7 @@ Suspending someone ends their active sessions immediately.
 cp .env.example .env.local     # then edit the values (see below)
 npm install
 npm run db:up                  # starts Postgres in Docker
-npm run db:push                # creates the tables
+npm run db:migrate             # creates the tables
 npm run db:seed                # loads the current site content + first admin
 npm run dev
 ```
@@ -85,42 +114,61 @@ The app talks to Postgres over a standard connection, so **moving between Neon
 and the Docker container is a change of `DATABASE_URL` and nothing else** — no
 code edits, no second driver.
 
+### Database changes apply themselves
+
+`npm run build` runs `db/migrate.mts` before `next build`. It applies any file
+in `db/migrations/` the database has not had yet, in order, and records each in
+a `cms_migrations` table — so **a deploy brings its own database changes**, and
+nobody has to paste SQL into Neon first. Each file runs in a transaction under
+an advisory lock, and the files from `0002` on are safe to run twice.
+
+Databases set up before the runner existed had `0000` and `0001` applied by
+hand; the runner recognises those by what they created and records them as
+applied rather than running them again.
+
+This relies on Vercel using the project's `build` script (its default for
+Next.js). If the project's Build Command has been overridden to `next build`,
+set it back to `npm run build`, or run `DATABASE_URL='<url>' npm run db:migrate`
+yourself before deploying. Otherwise the build fails — safely: the live site
+stays on the previous version.
+
+Migrations are written to be additive, so the version of the site that is
+already live keeps working against the updated database while the new one
+builds. Keep it that way: add columns, don't rename or drop them in the same
+deploy that stops using them.
+
 ### The SQL files
 
 | File | What it is |
 |---|---|
-| `db/migrations/0000_initial_cms_schema.sql` | Creates all 15 tables. Run first. |
-| `db/migrations/0001_add_description_fields.sql` | Adds the optional Description column. Run second. |
-| `db/content-snapshot.sql` | Every content row plus the uploaded images. Run last. |
+| `db/migrations/0000_initial_cms_schema.sql` | Creates all 15 tables. |
+| `db/migrations/0001_add_description_fields.sql` | Adds the optional Description column. |
+| `db/migrations/0002_articles.sql` | Turns awards, press and initiatives into articles: page addresses (filled in for existing rows), story, gallery, PDF, award recipient and dates. |
+| `db/content-snapshot.sql` | Every content row as of the first launch, plus its images. |
 
 `content-snapshot.sql` deliberately excludes `users` and `sessions`, so no
 password hash lives in a file — create the first account with `npm run cms:user`
-after restoring.
-
-You can paste both into Neon's SQL Editor, or pipe them in:
+after restoring. It was taken before `0001`, so it loads straight after `0000`;
+the migration runner then brings the database up to date:
 
 ```bash
 psql '<neon pooled url>' -v ON_ERROR_STOP=1 -f db/migrations/0000_initial_cms_schema.sql
 psql '<neon pooled url>' -v ON_ERROR_STOP=1 -f db/content-snapshot.sql
+DATABASE_URL='<neon pooled url>' npm run db:migrate
 ```
-
-`npm run db:push` does the same thing from the schema directly, if you'd rather
-not handle SQL by hand.
 
 > **The database must exist before the first deploy.** The public pages are
 > statically rendered from their content at build time, so `npm run build`
-> queries the database — against an empty or unreachable one it fails. Order is:
-> create the Neon database → run the two files → set the environment variables →
-> deploy.
+> queries the database — against an unreachable one it fails.
 
-### Vercel preview (Neon)
+### Vercel (Neon)
 
 1. Create a Neon project and copy the **pooled** connection string (the host
    contains `-pooler`).
 2. In Vercel → Settings → Environment Variables, set `DATABASE_URL` and
    `AUTH_SECRET`.
-3. Load the database **before** deploying — see [The SQL files](#the-sql-files)
-   — then create the first account:
+3. Load the content — see [The SQL files](#the-sql-files) — then create the
+   first account:
    ```bash
    DATABASE_URL='<neon pooled url>' npm run cms:user -- \
      --email=test@gbb.gov.ng --name='Galaxy Backbone Media Team' \
@@ -132,7 +180,7 @@ not handle SQL by hand.
 
 `docker-compose.yml` and `docker/postgres.Dockerfile` define the database. It is
 pinned to Postgres 17 to match the major version Neon runs, so a dump taken from
-the preview restores without a version jump:
+Neon restores without a version jump:
 
 ```bash
 pg_dump '<neon pooled url>' -Fc -f cms.dump      # from Neon
@@ -142,7 +190,7 @@ pg_restore -d '<docker url>' --no-owner cms.dump # into the container
 
 Then point the app's `DATABASE_URL` at the container and restart it.
 
-Back the volume up like any other database — **uploaded images live in
+Back the volume up like any other database — **uploaded photos and PDFs live in
 Postgres**, so a database backup is a complete backup of the site's content.
 
 ---
@@ -150,29 +198,49 @@ Postgres**, so a database backup is a complete backup of the site's content.
 ## How it works
 
 - **Content** — one table per section in `db/schema.ts`. They share `position`
-  (manual ordering) and `published` (hide without deleting).
+  (manual ordering) and `published` (hide without deleting). Awards, press
+  items and initiatives also share the article columns: `slug` (the page
+  address), `body`, `gallery_ids` and `attachment_id`.
 - **The registry** — `lib/cms/registry.ts` describes each section: its table,
   its fields, and which public pages to refresh when it changes. One generic set
-  of screens renders all ten, so adding a section later means adding one entry
-  here, not building another page.
+  of screens renders all of them, so adding a section later means adding one
+  entry here, not building another page. A section with `article` set gets the
+  two-column article editor and its own public pages.
+- **Article pages** — `app/lib/articles.ts` reads them;
+  `app/components/article/ArticleLayout.tsx` lays every one out. Pages are
+  generated ahead of time for every published entry; one added later renders
+  on its first visit.
+- **The story** — written in a TipTap editor (`app/admin/_components/editor/`)
+  that uses the same typeface and spacing as the public page. It is stored as
+  HTML and cleaned on save and again on render (`lib/cms/rich-text.ts`) down to
+  what the toolbar can produce — so formatting pasted from Word or a website,
+  scripts and embeds never reach the site.
 - **Publishing** — public pages are statically rendered and revalidated on
-  demand. Saving calls `revalidatePath` for that section's pages, so edits go
-  live at once; a 5-minute background revalidation is a safety net.
-- **Images** — stored as rows in Postgres and served from `/api/media/[id]`
-  with the file's checksum in the URL, so they cache permanently yet update the
-  moment the file changes. Storing them in the database is what lets the same
-  code run on Vercel's read-only filesystem and on your own server without a
-  separate blob service. Uploads are capped at 8MB, and each one is resized to
-  fit within 2560px, re-encoded and stripped of camera metadata (which also
-  removes GPS coordinates from phone photos) before it is stored — a 4.4MB
-  photo straight off a phone lands in the database at about 1.2MB. `next/image`
-  then resizes and re-formats again on delivery.
+  demand. Saving calls `revalidatePath` for that section's pages (and every
+  article page in it, since each lists its neighbours), so edits go live at
+  once; a 5-minute background revalidation is a safety net.
+- **Photos and PDFs** — stored as rows in Postgres and served from
+  `/api/media/[id]` with the file's checksum in the URL, so they cache
+  permanently yet update the moment the file changes. Storing them in the
+  database is what lets the same code run on Vercel's read-only filesystem and
+  on your own server without a separate blob service.
 
-  Vercel refuses any request over 4.5MB, so the upload form shrinks anything
-  over 4MB in the browser first (`lib/cms/shrink-image.ts`), to the same
-  2560px. `serverActions.bodySizeLimit` in `next.config.ts` is raised from
-  Next's 1MB default to match. GIFs are never re-encoded (that would lose the
-  animation), so they must already be under 4MB.
+  Photos are capped at 8MB, and each one is resized to fit within 2560px,
+  re-encoded and stripped of camera metadata (which also removes GPS
+  coordinates from phone photos) before it is stored — a 4.4MB photo straight
+  off a phone lands in the database at about 1.2MB. `next/image` then resizes
+  and re-formats again on delivery.
+
+  Vercel refuses any request **or response** over 4.5MB, so anything over 4MB
+  is shrunk in the browser before it is sent (`lib/cms/shrink-image.ts`), to
+  the same 2560px. `serverActions.bodySizeLimit` in `next.config.ts` is raised
+  from Next's 1MB default to match. GIFs are never re-encoded (that would lose
+  the animation), so they must already be under 4MB — and so must PDFs, which
+  can't be shrunk in the browser. A PDF is checked to really be a PDF, and is
+  served under its own file name.
+
+  Deleting a file from the library also takes it out of every gallery; a cover
+  photo or PDF that is deleted simply disappears from its article.
 
   The cache-busting checksum sits in the URL path rather than a query string so
   that `images.localPatterns` in `next.config.ts` can pin `search: ""`, which
@@ -182,15 +250,16 @@ Postgres**, so a database backup is a complete backup of the site's content.
   only a signed session id, so revoking access takes effect on the next request.
   Passwords are hashed with bcrypt (12 rounds). `proxy.ts` (Next 16's renamed
   middleware) does a cheap signature check before pages render; the admin layout
-  does the authoritative database check.
+  and every server action do the authoritative database check.
 
 ### Useful commands
 
 | Command | Does |
 |---|---|
 | `npm run db:up` / `db:down` | Start / stop the Docker database |
-| `npm run db:push` | Apply `db/schema.ts` to the database |
-| `npm run db:generate` / `db:migrate` | Versioned migrations, for production changes |
+| `npm run db:migrate` | Apply any migrations this database hasn't had (also runs on every build) |
+| `npm run db:generate` | Write a new migration from changes to `db/schema.ts` — then make it re-runnable by hand, as `0002` is |
+| `npm run db:push` | Apply `db/schema.ts` directly, for throwaway local databases |
 | `npm run db:studio` | Browse the data in Drizzle Studio |
 | `npm run db:seed` | Load the site's content (safe to re-run; skips non-empty tables) |
 | `npm run cms:user -- --email=… --password=… --role=admin` | Create an account or reset a password from the terminal |

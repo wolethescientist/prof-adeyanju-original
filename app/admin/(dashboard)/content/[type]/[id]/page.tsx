@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getContentType } from "@/lib/cms/registry";
 import { getEntry } from "@/lib/cms/entries";
-import { listMedia } from "@/lib/cms/media";
+import { listFiles, listImages } from "@/lib/cms/media";
 import EntryForm from "@/app/admin/_components/EntryForm";
 import ConfirmDelete from "@/app/admin/_components/ConfirmDelete";
 import { deleteEntry, updateEntry } from "@/app/admin/_actions/content";
@@ -18,14 +18,25 @@ export default async function EditEntryPage({
   const type = getContentType(slug);
   if (!type) notFound();
 
+  /* A malformed id would make Postgres throw rather than find nothing. */
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) notFound();
   const entry = await getEntry(type, id);
   if (!entry) notFound();
 
-  const needsImages = type.fields.some((field) => field.type === "image");
-  const images = needsImages ? await listMedia() : [];
+  const usesImages = type.fields.some((field) => field.type === "image" || field.type === "gallery");
+  const usesFiles = type.fields.some((field) => field.type === "attachment");
+  const [images, files] = await Promise.all([
+    usesImages ? listImages() : [],
+    usesFiles ? listFiles() : [],
+  ]);
+
+  const viewHref =
+    type.article && entry.published && typeof entry.slug === "string"
+      ? `${type.article.path}/${entry.slug}`
+      : null;
 
   return (
-    <div className="flex flex-col gap-7 max-w-2xl">
+    <div className={type.article ? "flex flex-col gap-7" : "flex flex-col gap-7 max-w-2xl"}>
       <div>
         <Link
           href={`/admin/content/${slug}`}
@@ -34,7 +45,7 @@ export default async function EditEntryPage({
           <ArrowLeft className="size-4" aria-hidden="true" />
           {type.label}
         </Link>
-        <h1 className="mt-4 text-2xl font-bold tracking-tight">
+        <h1 className="mt-4 font-heading text-3xl font-medium tracking-tight">
           Edit {type.singular.toLowerCase()}
         </h1>
       </div>
@@ -45,11 +56,15 @@ export default async function EditEntryPage({
           label: type.label,
           singular: type.singular,
           fields: type.fields,
+          titleField: type.titleField,
+          article: Boolean(type.article),
         }}
         action={updateEntry.bind(null, slug, id)}
         initial={entry}
         images={images}
+        files={files}
         submitLabel="Save changes"
+        viewHref={viewHref}
       />
 
       {!type.fixed && (

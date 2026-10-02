@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Reveal from "@/app/components/Reveal";
-import { PageHeader } from "@/app/components/ui";
+import { Accent, Kicker, PageHeader } from "@/app/components/ui";
 import { getTimeline } from "@/app/lib/content";
 
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ export default async function JourneyPage() {
         kicker="The Journey"
         title={
           <>
-            From <span className="text-primary">Ogbomoso to Abuja</span>
+            From <Accent>Ogbomoso to Abuja</Accent>
           </>
         }
         intro="Six chapters: Ogbomoso, Aberdeen, Cambridge, Oye-Ekiti and Abuja."
@@ -35,20 +35,20 @@ export default async function JourneyPage() {
             {timeline.map((t, i) => (
               <li key={t.id} className="relative pl-10 md:pl-14 pb-14 last:pb-0">
                 <span
-                  className="absolute -left-[9px] top-1.5 size-4 rounded-full bg-primary border-4 border-background"
+                  className="absolute -left-[9px] top-1 size-4 rotate-45 bg-gold border-[3px] border-background"
                   aria-hidden="true"
                 />
                 <Reveal delay={i * 60}>
-                  <p className="text-sm font-bold uppercase tracking-[0.15em] text-primary">
+                  <p className="font-mono text-xs font-medium uppercase tracking-[0.18em] text-primary">
                     {t.period}
                   </p>
-                  <h2 className="mt-3 text-2xl md:text-3xl font-bold tracking-tight leading-snug">
+                  <h2 className="mt-3 text-3xl md:text-4xl font-medium tracking-[-0.015em] leading-tight">
                     {t.title}
                   </h2>
-                  <p className="mt-2 text-base font-bold text-muted-foreground">
+                  <p className="mt-2 text-base font-semibold text-foreground/70">
                     {t.org}
                   </p>
-                  <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed font-medium">
+                  <p className="mt-4 max-w-2xl text-lg text-muted-foreground leading-relaxed">
                     {t.detail}
                   </p>
                 </Reveal>
@@ -57,21 +57,19 @@ export default async function JourneyPage() {
           </ol>
 
           <Reveal delay={200}>
-            <div className="mt-20 rounded-3xl bg-[#0b1220] text-white p-10 md:p-14 relative overflow-hidden">
+            <div className="mt-20 rounded-3xl bg-ink text-white p-10 md:p-14 relative overflow-hidden">
               <div
                 className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(29,78,216,0.35),transparent_60%)]"
                 aria-hidden="true"
               />
               <div className="relative">
-                <p className="text-sm font-bold uppercase tracking-[0.2em] text-white/60">
-                  The story continues
-                </p>
-                <h2 className="mt-4 text-3xl md:text-4xl font-bold tracking-tight max-w-xl leading-snug">
+                <Kicker className="text-[#8fb0ff]">The story continues</Kicker>
+                <h2 className="mt-4 text-3xl md:text-5xl font-medium tracking-[-0.02em] max-w-xl leading-tight">
                   What has two years of this leadership delivered?
                 </h2>
                 <Button
                   size="lg"
-                  className="mt-8 h-12 rounded-full px-7 text-sm font-bold bg-white text-[#0b1220] hover:bg-white/90"
+                  className="mt-8 h-12 rounded-full px-7 text-sm font-bold bg-white text-ink hover:bg-white/90"
                   nativeButton={false}
                   render={<Link href="/impact" />}
                 >

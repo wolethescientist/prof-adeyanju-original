@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Public_Sans, Space_Grotesk } from "next/font/google";
+import { IBM_Plex_Mono, Newsreader, Public_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -8,9 +8,21 @@ const publicSans = Public_Sans({
   variable: "--font-public-sans",
 });
 
-const spaceGrotesk = Space_Grotesk({
+/* Headlines and article text: an editorial serif, for a site that is mostly
+   citations, honours and stories. Optical sizing keeps it crisp at 14px and
+   graceful at 72px. */
+const newsreader = Newsreader({
   subsets: ["latin"],
-  variable: "--font-space-grotesk",
+  variable: "--font-newsreader",
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+});
+
+/* Dates, years and labels — the record-keeping voice. */
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-plex-mono",
 });
 
 export const metadata: Metadata = {
@@ -38,7 +50,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full antialiased", publicSans.variable, spaceGrotesk.variable)}
+      /* Smooth scrolling is for in-page links; Next turns it off during route
+         changes when told it's there. */
+      data-scroll-behavior="smooth"
+      className={cn(
+        "h-full antialiased",
+        publicSans.variable,
+        newsreader.variable,
+        plexMono.variable
+      )}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
