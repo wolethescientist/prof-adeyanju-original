@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Attachment, Picture } from "@/app/lib/articles";
 import { formatBytes } from "@/app/lib/format";
 import { cn } from "@/lib/utils";
+import Reveal from "../Reveal";
 import CopyLink from "./CopyLink";
 import { Gallery, LightboxProvider, ZoomableImage } from "./Lightbox";
 
@@ -56,9 +57,14 @@ export default function ArticleLayout({
   return (
     <LightboxProvider pictures={pictures}>
       <article>
-        <header className="border-b bg-card">
-          <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">
-            <nav aria-label="Breadcrumb">
+        <header className="relative overflow-hidden border-b bg-card">
+          <div className="dotgrid absolute inset-0" aria-hidden="true" />
+          <div
+            className="absolute inset-x-0 top-0 h-full bg-[radial-gradient(ellipse_at_top_right,rgba(29,78,216,0.10),transparent_55%)]"
+            aria-hidden="true"
+          />
+          <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-14">
+            <nav aria-label="Breadcrumb" className="animate-fade-up">
               <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
                 {trail.map((crumb, i) => (
                   <li key={crumb.href} className="flex items-center gap-1.5">
@@ -78,18 +84,32 @@ export default function ArticleLayout({
               )}
             >
               <div>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">{eyebrow}</div>
-                <h1 className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-balance md:text-6xl">
+                <div
+                  className="animate-fade-up flex flex-wrap items-center gap-x-3 gap-y-2"
+                  style={{ animationDelay: "80ms" }}
+                >
+                  {eyebrow}
+                </div>
+                <h1
+                  className="animate-fade-up mt-5 max-w-4xl text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-balance md:text-6xl"
+                  style={{ animationDelay: "160ms" }}
+                >
                   {title}
                 </h1>
                 {summary && (
-                  <p className="mt-6 max-w-2xl text-xl leading-relaxed text-muted-foreground text-pretty md:text-[1.35rem]">
+                  <p
+                    className="animate-fade-up mt-6 max-w-2xl text-xl leading-relaxed text-muted-foreground text-pretty md:text-[1.35rem]"
+                    style={{ animationDelay: "240ms" }}
+                  >
                     {summary}
                   </p>
                 )}
 
                 {details.length > 0 && (
-                  <dl className="mt-8 flex flex-wrap gap-x-12 gap-y-5 border-t pt-6">
+                  <dl
+                    className="animate-fade-up mt-8 flex flex-wrap gap-x-12 gap-y-5 border-t pt-6"
+                    style={{ animationDelay: "320ms" }}
+                  >
                     {details.map((detail) => (
                       <div key={detail.label}>
                         <dt className="text-sm text-muted-foreground">{detail.label}</dt>
@@ -99,7 +119,10 @@ export default function ArticleLayout({
                   </dl>
                 )}
 
-                <div className="mt-8 flex flex-wrap gap-3">
+                <div
+                  className="animate-fade-up mt-8 flex flex-wrap gap-3"
+                  style={{ animationDelay: "400ms" }}
+                >
                   {external && (
                     <a
                       href={external.href}
@@ -137,7 +160,7 @@ export default function ArticleLayout({
                   index={0}
                   priority
                   sizes="(min-width: 1024px) 400px, 100vw"
-                  className="mx-auto w-full max-w-md overflow-hidden rounded-2xl shadow-[0_24px_60px_-20px_rgba(16,24,40,0.35)] ring-1 ring-black/5 lg:mx-0 lg:justify-self-end"
+                  className="mx-auto w-full max-w-md overflow-hidden rounded-2xl shadow-[0_24px_60px_-20px_rgba(16,24,40,0.35)] ring-1 ring-black/5 lg:mx-0 lg:justify-self-end animate-fade-up"
                 />
               )}
             </div>
@@ -151,7 +174,7 @@ export default function ArticleLayout({
               index={0}
               priority
               sizes="(min-width: 1152px) 1104px, 100vw"
-              className="mx-auto overflow-hidden rounded-2xl shadow-[0_24px_60px_-20px_rgba(16,24,40,0.35)] ring-1 ring-black/5"
+              className="animate-fade-up mx-auto overflow-hidden rounded-2xl shadow-[0_24px_60px_-20px_rgba(16,24,40,0.35)] ring-1 ring-black/5"
             />
           </div>
         )}
@@ -165,7 +188,7 @@ export default function ArticleLayout({
               />
             )}
             {gallery.length > 0 && (
-              <section className={cn(body && "mt-20")} aria-label="Photos">
+              <section className={cn("animate-fade-up", body && "mt-20")} aria-label="Photos">
                 <h2 className="mb-6 text-2xl font-semibold tracking-tight">
                   Photos
                   <span className="ml-2 text-base font-normal text-muted-foreground">
@@ -191,9 +214,11 @@ export default function ArticleLayout({
                   <ArrowUpRight className="size-4" aria-hidden="true" />
                 </Link>
               </div>
-              <div className="mt-8 columns-1 gap-6 sm:columns-2 lg:columns-3 [&>*]:mb-6 [&>*]:break-inside-avoid">
-                {more.children}
-              </div>
+              <Reveal>
+                <div className="mt-8 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {more.children}
+                </div>
+              </Reveal>
             </div>
           </section>
         )}

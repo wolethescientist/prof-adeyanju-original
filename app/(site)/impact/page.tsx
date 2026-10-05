@@ -4,10 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { InitiativeCard } from "@/app/components/cards";
-import { PageHeader, SectionHeading } from "@/app/components/ui";
+import Counter from "@/app/components/Counter";
+import Reveal from "@/app/components/Reveal";
+import { Kicker, PageHeader, SectionHeading } from "@/app/components/ui";
 import { getInitiativeCards } from "@/app/lib/articles";
 import { getImpactStats, getSiteImages } from "@/app/lib/content";
-import { formatCount } from "@/app/lib/format";
 
 export const metadata: Metadata = {
   title: "Impact — Prof. Ibrahim Adepoju Adeyanju",
@@ -34,15 +35,19 @@ export default async function ImpactPage() {
       />
 
       {keyNumbers.length > 0 && (
-        <section className="bg-ink text-white">
+        <section className="relative overflow-hidden bg-ink text-white">
+          <div
+            className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(29,78,216,0.35),transparent_55%)]"
+            aria-hidden="true"
+          />
           <div className="relative mx-auto max-w-6xl px-6 py-16">
-            <div>
+            <Reveal>
               <dl className="grid grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-10">
                 {keyNumbers.map((s) => (
                   <div key={s.id} className="border-t border-white/20 pt-5">
                     <dt className="sr-only">{s.label}</dt>
                     <dd className="text-4xl md:text-5xl font-semibold tracking-tight">
-                      {formatCount(s.value, s.suffix)}
+                      <Counter to={s.value} suffix={s.suffix} />
                     </dd>
                     <p className="mt-3 text-sm text-white/70 leading-snug max-w-[15rem]">
                       {s.label}
@@ -50,26 +55,26 @@ export default async function ImpactPage() {
                   </div>
                 ))}
               </dl>
-            </div>
+            </Reveal>
           </div>
         </section>
       )}
 
       <section id="initiatives" className="py-16 scroll-mt-20">
         <div className="mx-auto max-w-6xl px-6">
-          <div>
+          <Reveal>
             <SectionHeading
               title="Flagship initiatives"
               intro="Open any initiative to read what it is, who it serves and what it has delivered."
             />
-          </div>
+          </Reveal>
 
           <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {initiatives.map((item) => (
+            {initiatives.map((item, i) => (
               <li key={item.id}>
-                <div className="h-full">
+                <Reveal delay={(i % 3) * 80} className="h-full">
                   <InitiativeCard item={item} />
-                </div>
+                </Reveal>
               </li>
             ))}
           </ul>
@@ -78,33 +83,40 @@ export default async function ImpactPage() {
 
       <section className="pb-16">
         <div className="mx-auto max-w-6xl px-6">
-          <div>
-            <figure>
+          <Reveal>
+            <figure className="relative overflow-hidden rounded-2xl border">
               <Image
                 src={team.src}
                 alt={team.alt}
                 width={team.width}
                 height={team.height}
                 sizes="(min-width: 1152px) 1104px, 100vw"
-                className="w-full rounded-xl"
+                className="w-full h-auto"
               />
-              <figcaption className="mt-3 text-sm text-muted-foreground">
-                {team.caption ??
-                  "Prof. Adeyanju with Galaxy Backbone's executive management team."}
+              <div
+                className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-transparent"
+                aria-hidden="true"
+              />
+              <figcaption className="absolute bottom-6 left-6 right-6 md:bottom-8 md:left-10">
+                <Kicker className="text-[#8fb0ff]">The team</Kicker>
+                <p className="mt-2 max-w-xl text-xl md:text-2xl text-white leading-snug">
+                  {team.caption ??
+                    "Prof. Adeyanju with Galaxy Backbone's executive management team."}
+                </p>
               </figcaption>
             </figure>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       <section className="py-16 bg-card border-t">
         <div className="mx-auto max-w-6xl px-6 grid md:grid-cols-2 gap-14 items-center">
-          <div>
+          <Reveal>
             <SectionHeading
               title="Government-as-a-Platform"
             />
-          </div>
-          <div>
+          </Reveal>
+          <Reveal delay={120}>
             <div className="flex flex-col gap-5 text-muted-foreground leading-relaxed text-lg">
               <p>
                 From the WIOCC partnership deepening the national fibre
@@ -128,7 +140,7 @@ export default async function ImpactPage() {
                 <ArrowRight data-icon="inline-end" />
               </Button>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
     </>

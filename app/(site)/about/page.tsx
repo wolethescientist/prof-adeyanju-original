@@ -2,6 +2,7 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import Reveal from "@/app/components/Reveal";
 import { Kicker, PageHeader, SectionHeading } from "@/app/components/ui";
 import { getEducation, getGlance, getHonours } from "@/app/lib/content";
 
@@ -37,7 +38,7 @@ export default async function AboutPage() {
       {/* Bio + at a glance */}
       <section className="py-20">
         <div className="mx-auto max-w-6xl px-6 grid md:grid-cols-2 gap-14 items-start">
-          <div>
+          <Reveal>
             <div className="flex flex-col gap-5 text-lg text-muted-foreground leading-relaxed">
               <p>
                 Prof. Ibrahim Adepoju Adeyanju is a Professor of Computer
@@ -61,11 +62,11 @@ export default async function AboutPage() {
                 cybersecurity.
               </p>
             </div>
+          </Reveal>
 
-          </div>
-
-          <div>
-            <div className="rounded-xl border bg-card p-8">
+          <Reveal delay={150}>
+            <div className="relative overflow-hidden rounded-xl border bg-card p-8">
+              <div className="foil absolute inset-x-0 top-0 h-[3px]" aria-hidden="true" />
               <h2 className="mb-7">
                 <Kicker>At a glance</Kicker>
               </h2>
@@ -93,22 +94,22 @@ export default async function AboutPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* Education */}
       <section className="py-20 bg-card border-t">
         <div className="mx-auto max-w-6xl px-6">
-          <div>
+          <Reveal>
             <SectionHeading
               title="Education"
             />
-          </div>
+          </Reveal>
 
           <div className="mt-12 border-t">
             {education.map((e, i) => (
-              <div key={e.id}>
+              <Reveal key={e.id} delay={i * 60}>
                 <a
                   href={e.href ?? undefined}
                   target="_blank"
@@ -132,11 +133,11 @@ export default async function AboutPage() {
                     aria-hidden="true"
                   />
                 </a>
-              </div>
+              </Reveal>
             ))}
           </div>
 
-          <div>
+          <Reveal delay={200}>
             <Button
               size="lg"
               className="mt-10 h-11 rounded-lg px-6 text-sm font-bold"
@@ -146,7 +147,7 @@ export default async function AboutPage() {
               Follow the full journey
               <ArrowRight data-icon="inline-end" />
             </Button>
-          </div>
+          </Reveal>
         </div>
       </section>
       {honours.length > 0 && (

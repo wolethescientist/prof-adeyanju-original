@@ -1,12 +1,18 @@
 import { Globe, GraduationCap } from "lucide-react";
+import Reveal from "./Reveal";
 
 const link =
   "inline-flex items-center gap-2 rounded-lg border border-white/25 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:border-white/60";
 
 export default function Footer() {
   return (
-    <footer id="contact" className="bg-ink text-white pt-16 pb-10">
-      <div className="mx-auto max-w-6xl px-6">
+    <footer id="contact" className="relative overflow-hidden bg-ink text-white pt-16 pb-10">
+      <div
+        className="absolute inset-x-0 top-0 h-full bg-[radial-gradient(ellipse_at_bottom_left,rgba(29,78,216,0.25),transparent_60%)]"
+        aria-hidden="true"
+      />
+      <div className="relative mx-auto max-w-6xl px-6">
+        <Reveal>
         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight">
           Prof. Ibrahim Adepoju Adeyanju
         </h2>
@@ -44,6 +50,8 @@ export default function Footer() {
             Google Scholar
           </a>
         </div>
+
+        </Reveal>
 
         <div className="mt-14 pt-6 border-t border-white/15 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs text-white/60">
           <p>© {new Date().getFullYear()} Prof. Ibrahim Adepoju Adeyanju. All rights reserved.</p>

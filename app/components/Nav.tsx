@@ -18,11 +18,34 @@ const links = [
 export default function Nav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 24);
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(max > 0 ? window.scrollY / max : 0);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => setOpen(false), [pathname]);
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur">
+    <header
+      className={cn(
+        "sticky top-0 z-50 border-b bg-card/90 backdrop-blur-md transition-shadow duration-300",
+        scrolled && "shadow-[0_10px_35px_rgba(16,24,40,0.08)]"
+      )}
+    >
+      <div
+        className="absolute inset-x-0 top-0 h-[3px] origin-left bg-primary"
+        style={{ transform: `scaleX(${progress})` }}
+        aria-hidden="true"
+      />
       <nav
         className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6"
         aria-label="Main navigation"

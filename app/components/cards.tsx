@@ -8,7 +8,7 @@ import { NEWS_CATEGORY_INFO } from "@/lib/cms/news";
 import { cn } from "@/lib/utils";
 
 const card =
-  "group relative flex flex-col overflow-hidden rounded-2xl border bg-card transition-[border-color,box-shadow] duration-300 hover:border-primary/30 hover:shadow-[0_18px_40px_-18px_rgba(16,24,40,0.25)] focus-within:border-primary/30";
+  "group relative flex flex-col overflow-hidden rounded-2xl border bg-card transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_22px_45px_rgba(16,24,40,0.12)] focus-within:border-primary/30";
 
 /* The whole card is one link; the title carries it, stretched over the card. */
 const stretched = "after:absolute after:inset-0 after:content-[''] focus-visible:outline-none";

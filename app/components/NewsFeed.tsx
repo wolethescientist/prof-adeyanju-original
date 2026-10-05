@@ -59,9 +59,20 @@ export default function NewsFeed({ items }: { items: News[] }) {
         </div>
       )}
 
-      <ul className="columns-1 gap-6 sm:columns-2 lg:columns-3">
-        {shown.map((item) => (
-          <li key={item.id} className="mb-6 break-inside-avoid">
+      <ul
+        className={
+          /* A few cards sit in a plain row; many stack in gap-free columns. */
+          shown.length <= 3
+            ? "grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            : "columns-1 gap-6 sm:columns-2 lg:columns-3"
+        }
+      >
+        {shown.map((item, index) => (
+          <li
+            key={item.id}
+            className="mb-6 break-inside-avoid animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both"
+            style={{ animationDelay: `${Math.min(index, 8) * 50}ms` }}
+          >
             <NewsCard item={item} />
           </li>
         ))}

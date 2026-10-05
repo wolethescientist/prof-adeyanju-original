@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { NewsCard } from "@/app/components/cards";
+import Counter from "@/app/components/Counter";
+import Reveal from "@/app/components/Reveal";
 import { Kicker, SectionHeading } from "@/app/components/ui";
 import { getInitiativeCards } from "@/app/lib/articles";
 import {
@@ -36,19 +38,35 @@ export default async function Home() {
   return (
     <>
       {/* ============================ HERO ============================ */}
-      <section className="border-b bg-card">
-        <div className="mx-auto max-w-6xl px-6 py-14 md:py-20 grid md:grid-cols-[1.15fr_0.85fr] gap-12 items-center">
+      <section className="relative overflow-hidden border-b bg-card">
+        <div className="dotgrid absolute inset-0" aria-hidden="true" />
+        <div
+          className="animate-glow absolute inset-x-0 top-0 h-[40rem] bg-[radial-gradient(ellipse_at_top_right,rgba(29,78,216,0.12),transparent_60%)]"
+          aria-hidden="true"
+        />
+        <div className="relative mx-auto max-w-6xl px-6 py-14 md:py-20 grid md:grid-cols-[1.15fr_0.85fr] gap-12 items-center">
           <div>
-            <Kicker>Professor · Engineer · MD/CEO, Galaxy Backbone</Kicker>
-            <h1 className="mt-4 text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05]">
+            <div className="animate-fade-up">
+              <Kicker>Professor · Engineer · MD/CEO, Galaxy Backbone</Kicker>
+            </div>
+            <h1
+              className="animate-fade-up mt-4 text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05]"
+              style={{ animationDelay: "120ms" }}
+            >
               Prof. Ibrahim Adepoju Adeyanju
             </h1>
-            <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
+            <p
+              className="animate-fade-up mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl"
+              style={{ animationDelay: "240ms" }}
+            >
               Professor of Computer Engineering and AI researcher, leading the
               company that runs the Federal Government of Nigeria&apos;s
               digital infrastructure.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div
+              className="animate-fade-up mt-8 flex flex-wrap gap-3"
+              style={{ animationDelay: "360ms" }}
+            >
               <Button
                 size="lg"
                 className="h-11 rounded-lg px-6 text-sm font-bold"
@@ -68,38 +86,53 @@ export default async function Home() {
                 News &amp; awards
               </Button>
             </div>
-            {keywords.length > 0 && (
-              <ul className="mt-8 flex flex-wrap gap-2">
-                {keywords.map((keyword) => (
-                  <li
-                    key={keyword}
-                    className="rounded-md border bg-background px-3 py-1 text-sm text-muted-foreground"
-                  >
-                    {keyword}
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
 
-          <div className="justify-self-center">
-            <Image
-              src={hero.src}
-              alt={hero.alt}
-              width={hero.width}
-              height={hero.height}
-              priority
-              sizes="(min-width: 768px) 416px, 100vw"
-              className="w-full max-w-md rounded-xl h-auto"
-            />
-          </div>
+          <Reveal className="justify-self-center">
+            <div className="relative">
+              <div
+                className="animate-float absolute -inset-4 rounded-3xl bg-secondary"
+                aria-hidden="true"
+              />
+              <Image
+                src={hero.src}
+                alt={hero.alt}
+                width={hero.width}
+                height={hero.height}
+                priority
+                sizes="(min-width: 768px) 416px, 100vw"
+                className="relative w-full max-w-md rounded-2xl h-auto shadow-[0_30px_70px_rgba(16,24,40,0.16)]"
+              />
+            </div>
+          </Reveal>
         </div>
+
+        {/* Keywords, scrolling */}
+        {keywords.length > 0 && (
+          <div aria-hidden="true" className="relative py-5 border-t bg-card overflow-hidden">
+            <div className="marquee-track flex w-max items-center">
+              {[0, 1].map((copy) => (
+                <div key={copy} className="flex items-center shrink-0">
+                  {keywords.map((item) => (
+                    <span key={item} className="flex items-center">
+                      <span className="text-lg text-muted-foreground whitespace-nowrap px-8">
+                        {item}
+                      </span>
+                      <span className="size-1.5 rounded-full bg-primary/40 shrink-0" />
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ============================ LATEST ============================ */}
       {latest.length > 0 && (
         <section className="border-b py-14" aria-labelledby="latest">
           <div className="mx-auto max-w-6xl px-6">
+            <Reveal>
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <Kicker className="mb-1">What&apos;s new</Kicker>
@@ -117,11 +150,14 @@ export default async function Home() {
                 <ArrowRight data-icon="inline-end" />
               </Button>
             </div>
+            </Reveal>
 
-            <ul className="mt-8 columns-1 gap-6 md:columns-3">
-              {latest.map((item) => (
-                <li key={item.id} className="mb-6 break-inside-avoid">
-                  <NewsCard item={item} />
+            <ul className="mt-8 grid items-start gap-6 md:grid-cols-3">
+              {latest.map((item, index) => (
+                <li key={item.id}>
+                  <Reveal delay={index * 100}>
+                    <NewsCard item={item} />
+                  </Reveal>
                 </li>
               ))}
             </ul>
@@ -131,14 +167,18 @@ export default async function Home() {
 
       {/* ============================ STATS BAND ============================ */}
       {stats.length > 0 && (
-        <section className="bg-ink text-white">
-          <div className="mx-auto max-w-6xl px-6 py-16">
+        <section className="relative overflow-hidden bg-ink text-white">
+          <div
+            className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(29,78,216,0.3),transparent_55%)]"
+            aria-hidden="true"
+          />
+          <Reveal className="relative mx-auto max-w-6xl px-6 py-16">
             <dl className="grid grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-10">
               {stats.map((s) => (
                 <div key={s.id} className="border-t border-white/20 pt-5">
                   <dt className="sr-only">{s.label}</dt>
                   <dd className="text-4xl md:text-5xl font-semibold tracking-tight">
-                    {formatCount(s.value, s.suffix)}
+                    <Counter to={s.value} suffix={s.suffix} />
                   </dd>
                   <p className="mt-3 text-sm text-white/70 leading-snug max-w-[16rem]">
                     {s.label}
@@ -146,14 +186,14 @@ export default async function Home() {
                 </div>
               ))}
             </dl>
-          </div>
+          </Reveal>
         </section>
       )}
 
       {/* ============================ PROFILE ============================ */}
       <section className="py-16">
         <div className="mx-auto max-w-6xl px-6 grid md:grid-cols-[1.1fr_0.9fr] gap-14 items-center">
-          <div>
+          <Reveal>
             <SectionHeading title="About Prof. Adeyanju" />
             <div className="mt-6 flex flex-col gap-5 text-muted-foreground leading-relaxed text-lg max-w-xl">
               <p>
@@ -179,9 +219,10 @@ export default async function Home() {
               More about him
               <ArrowRight data-icon="inline-end" />
             </Button>
-          </div>
+          </Reveal>
 
-          <figure className="justify-self-center max-w-xs">
+          <Reveal delay={150} className="justify-self-center">
+          <figure className="max-w-xs">
             <Image
               src={profile.src}
               alt={profile.alt}
@@ -196,38 +237,48 @@ export default async function Home() {
               </figcaption>
             )}
           </figure>
+          </Reveal>
         </div>
       </section>
 
       {/* ============================ LEADERSHIP ============================ */}
       <section className="py-16 border-t bg-card">
         <div className="mx-auto max-w-6xl px-6">
-          <SectionHeading
-            title="Leadership at Galaxy Backbone"
-            intro="Since February 2024, the Integrated Digital Transformation Strategy has guided how Galaxy Backbone serves the Federal Government."
-          />
+          <Reveal>
+            <SectionHeading
+              title="Leadership at Galaxy Backbone"
+              intro="Since February 2024, the Integrated Digital Transformation Strategy has guided how Galaxy Backbone serves the Federal Government."
+            />
+          </Reveal>
 
           <div className="mt-10 grid md:grid-cols-2 gap-12 items-center">
-            <figure>
-              <Image
-                src={team.src}
-                alt={team.alt}
-                width={team.width}
-                height={team.height}
-                sizes="(min-width: 768px) 50vw, 100vw"
-                className="w-full h-auto rounded-xl"
-              />
-              <figcaption className="mt-3 text-sm text-muted-foreground">
-                {team.caption ?? "With Galaxy Backbone's executive management team, Abuja."}
-              </figcaption>
-            </figure>
+            <Reveal>
+              <figure className="relative overflow-hidden rounded-2xl border shadow-[0_25px_60px_rgba(16,24,40,0.14)]">
+                <Image
+                  src={team.src}
+                  alt={team.alt}
+                  width={team.width}
+                  height={team.height}
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  className="w-full h-auto"
+                />
+                <div
+                  className="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-transparent"
+                  aria-hidden="true"
+                />
+                <figcaption className="absolute bottom-5 left-6 right-6 text-sm font-semibold text-white">
+                  {team.caption ?? "With Galaxy Backbone's executive management team, Abuja."}
+                </figcaption>
+              </figure>
+            </Reveal>
 
             <div>
               <ul className="divide-y border-y">
-                {initiatives.slice(0, 4).map((item) => {
+                {initiatives.slice(0, 4).map((item, i) => {
                   const Icon = resolveIcon(item.icon);
                   return (
                     <li key={item.id}>
+                      <Reveal delay={i * 80}>
                       <Link href={item.href} className="group flex gap-4 py-5 pr-2">
                         <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
                           <Icon className="size-5" aria-hidden="true" />
@@ -245,6 +296,7 @@ export default async function Home() {
                           aria-hidden="true"
                         />
                       </Link>
+                      </Reveal>
                     </li>
                   );
                 })}
@@ -266,6 +318,7 @@ export default async function Home() {
       {/* ============================ RESEARCH ============================ */}
       <section className="py-16 border-t">
         <div className="mx-auto max-w-6xl px-6">
+          <Reveal>
           <div className="flex flex-wrap items-end justify-between gap-6">
             <SectionHeading title={`Research: ${formatCount(970, "+")} citations`} />
             <Button
@@ -284,13 +337,16 @@ export default async function Home() {
               <ArrowUpRight data-icon="inline-end" />
             </Button>
           </div>
+          </Reveal>
 
           <div className="mt-10 grid sm:grid-cols-2 gap-x-14">
-            {research.map((r) => (
-              <div key={r.id} className="border-t py-6">
-                <h3 className="text-xl font-semibold">{r.area}</h3>
-                <p className="mt-2 text-muted-foreground leading-relaxed">{r.detail}</p>
-              </div>
+            {research.map((r, i) => (
+              <Reveal key={r.id} delay={(i % 2) * 100}>
+                <div className="border-t py-6">
+                  <h3 className="text-xl font-semibold">{r.area}</h3>
+                  <p className="mt-2 text-muted-foreground leading-relaxed">{r.detail}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
