@@ -50,9 +50,14 @@ export default function ArticleLayout({
   more?: { title: string; href: string; linkLabel: string; children: React.ReactNode } | null;
 }) {
   const pictures = [...(cover ? [cover] : []), ...gallery];
-  /* A tall photo goes beside the headline, where it can be seen whole without
-     pushing the story down the page. */
-  const portrait = Boolean(cover?.width && cover?.height && cover.height > cover.width * 1.15);
+  /* The cover always sits at the top. A wide photo runs above the headline;
+     a square or tall one (a portrait, a logo) sits beside it, and above it on
+     a phone, so it is seen whole without pushing the story down the page. */
+  const ratio = cover?.width && cover?.height ? cover.width / cover.height : 1.6;
+  const wide = Boolean(cover) && ratio >= 1.4;
+  const beside = Boolean(cover) && !wide;
+  const coverLook =
+    "overflow-hidden rounded-2xl shadow-[0_24px_60px_-20px_rgba(16,24,40,0.35)] ring-1 ring-black/5";
 
   return (
     <LightboxProvider pictures={pictures}>
@@ -77,10 +82,20 @@ export default function ArticleLayout({
               </ol>
             </nav>
 
+            {wide && cover && (
+              <ZoomableImage
+                picture={cover}
+                index={0}
+                priority
+                sizes="(min-width: 1152px) 1104px, 100vw"
+                className={cn("animate-fade-up mx-auto mt-8", coverLook)}
+              />
+            )}
+
             <div
               className={cn(
                 "mt-8",
-                portrait && cover && "grid gap-12 lg:grid-cols-[minmax(0,1fr)_25rem] lg:items-center"
+                beside && "grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-center lg:gap-14"
               )}
             >
               <div>
@@ -154,30 +169,21 @@ export default function ArticleLayout({
                 </div>
               </div>
 
-              {portrait && cover && (
+              {beside && cover && (
                 <ZoomableImage
                   picture={cover}
                   index={0}
                   priority
-                  sizes="(min-width: 1024px) 400px, 100vw"
-                  className="mx-auto w-full max-w-md overflow-hidden rounded-2xl shadow-[0_24px_60px_-20px_rgba(16,24,40,0.35)] ring-1 ring-black/5 lg:mx-0 lg:justify-self-end animate-fade-up"
+                  sizes="(min-width: 1024px) 384px, 100vw"
+                  className={cn(
+                    "animate-fade-up order-first mx-auto w-full max-w-md lg:order-none lg:mx-0 lg:justify-self-end",
+                    coverLook
+                  )}
                 />
               )}
             </div>
           </div>
         </header>
-
-        {!portrait && cover && (
-          <div className="mx-auto max-w-6xl px-6 pt-12">
-            <ZoomableImage
-              picture={cover}
-              index={0}
-              priority
-              sizes="(min-width: 1152px) 1104px, 100vw"
-              className="animate-fade-up mx-auto overflow-hidden rounded-2xl shadow-[0_24px_60px_-20px_rgba(16,24,40,0.35)] ring-1 ring-black/5"
-            />
-          </div>
-        )}
 
         {(body || gallery.length > 0) && (
           <div className="mx-auto max-w-6xl px-6 py-14 md:py-20">
@@ -202,7 +208,7 @@ export default function ArticleLayout({
         )}
 
         {more && (
-          <section className="mt-6 border-t bg-card py-14 md:py-16">
+          <section className={cn("border-t bg-card py-14 md:py-16", (body || gallery.length > 0) && "mt-6")}>
             <div className="mx-auto max-w-6xl px-6">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">{more.title}</h2>

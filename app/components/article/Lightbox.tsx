@@ -173,6 +173,9 @@ export function ZoomableImage({
       type="button"
       onClick={() => open(index)}
       className={cn("block cursor-zoom-in", className)}
+      /* A small image (a logo, a low-resolution photo) is never blown up
+         past its real size, which would only blur it. */
+      style={picture.width ? { maxWidth: picture.width } : undefined}
       aria-label={`View photo full size: ${picture.alt}`}
     >
       <Image
