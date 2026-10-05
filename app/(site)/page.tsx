@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { NewsCard } from "@/app/components/cards";
+import JsonLd from "@/app/components/JsonLd";
 import Counter from "@/app/components/Counter";
 import Reveal from "@/app/components/Reveal";
 import { Kicker, SectionHeading } from "@/app/components/ui";
@@ -16,6 +17,7 @@ import {
 import { formatCount } from "@/app/lib/format";
 import { resolveIcon } from "@/app/lib/icons";
 import { getLatestNews } from "@/app/lib/news";
+import { personSchema, websiteSchema } from "@/lib/structured-data";
 
 /* Rendered statically and refreshed on demand: publishing in the CMS calls
    revalidatePath("/"), so edits appear without a redeploy. */
@@ -37,6 +39,7 @@ export default async function Home() {
 
   return (
     <>
+      <JsonLd data={[personSchema(), websiteSchema()]} />
       {/* ============================ HERO ============================ */}
       <section className="relative overflow-hidden border-b bg-card">
         <div className="dotgrid absolute inset-0" aria-hidden="true" />

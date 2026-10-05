@@ -6,12 +6,14 @@ import Counter from "@/app/components/Counter";
 import Reveal from "@/app/components/Reveal";
 import { PageHeader, SectionHeading } from "@/app/components/ui";
 import { getResearchAreas, getSiteImages } from "@/app/lib/content";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Research — Prof. Ibrahim Adepoju Adeyanju",
+export const metadata: Metadata = pageMetadata({
+  title: "Research",
   description:
     "AI, machine learning, NLP and African language technology — the research of Prof. Ibrahim Adeyanju.",
-};
+  path: "/research",
+});
 
 export const revalidate = 300;
 

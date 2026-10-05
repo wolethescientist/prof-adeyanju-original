@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import Reveal from "@/app/components/Reveal";
 import { Kicker, PageHeader } from "@/app/components/ui";
 import { getTimeline } from "@/app/lib/content";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Journey — Prof. Ibrahim Adepoju Adeyanju",
+export const metadata: Metadata = pageMetadata({
+  title: "Career journey",
   description:
     "From a First Class at LAUTECH to MD/CEO of Galaxy Backbone — the career of Prof. Ibrahim Adeyanju.",
-};
+  path: "/journey",
+});
 
 export const revalidate = 300;
 

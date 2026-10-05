@@ -92,6 +92,40 @@ Suspending someone ends their active sessions immediately.
 
 ---
 
+## Search engines
+
+The site is set up to be found on Google and to look right when shared.
+
+- **`/sitemap.xml`** lists every public page, including each news post and
+  initiative, and is refreshed when the team saves. **`/robots.txt`** points to
+  it and keeps `/admin` out of search results.
+- Every page has its own title, description and canonical address. Posts also
+  carry structured data (article, breadcrumbs) and the home and About pages
+  describe Prof. Adeyanju as a person, with links to his LinkedIn, Google
+  Scholar and Galaxy Backbone profiles.
+- Shared links show the post's cover photo, or a branded card when a post has
+  none.
+
+Two settings, both on Vercel under **Settings → Environment Variables**:
+
+| Variable | What for |
+|---|---|
+| `NEXT_PUBLIC_SITE_URL` | `https://www.ibrahimadeyanju.com`. Without it the site assumes this same address, so set it only if the domain changes. |
+| `GOOGLE_SITE_VERIFICATION` | Only for Search Console's "HTML tag" verification. The DNS method needs nothing. |
+
+To register with Google: add the domain at <https://search.google.com/search-console>
+as a **Domain** property, verify it with the DNS record Google gives, then
+submit `sitemap.xml` under **Sitemaps** and use **URL Inspection → Request
+indexing** on the home page and newest posts. Make sure the non-`www` address
+redirects to `www` (Vercel → Settings → Domains), so Google sees one address.
+
+Writing for search: give every post a clear headline, a one or two sentence
+summary and a real story, and describe photos when uploading them. Links from
+other sites (Galaxy Backbone, LinkedIn, the outlets that covered him) matter
+most.
+
+---
+
 ## Running it locally
 
 ```bash

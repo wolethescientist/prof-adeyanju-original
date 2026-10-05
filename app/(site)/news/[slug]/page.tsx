@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ArticleLayout from "@/app/components/article/ArticleLayout";
+import JsonLd from "@/app/components/JsonLd";
 import { NewsCard } from "@/app/components/cards";
 import { describe } from "@/app/lib/articles";
 import { RECIPIENT_NAME } from "@/app/lib/format";
 import { getNewsCards, getNewsItem } from "@/app/lib/news";
 import type { NewsCategory } from "@/db/schema";
 import { NEWS_CATEGORY_INFO } from "@/lib/cms/news";
+import { DEFAULT_SHARE_IMAGE } from "@/lib/seo";
+import { SITE_NAME } from "@/lib/site";
+import { articleSchema, breadcrumbSchema } from "@/lib/structured-data";
 
 export const revalidate = 300;
 
@@ -36,14 +40,28 @@ export async function generateMetadata({
   const item = await getNewsItem((await params).slug);
   if (!item) return {};
   const description = describe(item.summary, item.body) || item.title;
+  const path = `/news/${item.slug}`;
   return {
-    title: `${item.title} — News & Awards`,
+    title: item.title,
     description,
+    alternates: { canonical: path },
     openGraph: {
+      type: "article",
+      siteName: SITE_NAME,
+      locale: "en_NG",
+      url: path,
       title: item.title,
       description,
-      type: "article",
-      images: item.cover ? [item.cover.src] : undefined,
+      publishedTime: item.postedAt.toISOString(),
+      modifiedTime: item.updatedAt.toISOString(),
+      authors: [SITE_NAME],
+      images: [item.cover ? { url: item.cover.src, alt: item.cover.alt } : DEFAULT_SHARE_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: item.title,
+      description,
+      images: [item.cover?.src ?? DEFAULT_SHARE_IMAGE.url],
     },
   };
 }
@@ -54,8 +72,27 @@ export default async function NewsItemPage({ params }: { params: Promise<{ slug:
   if (!item) notFound();
 
   const others = all.filter((other) => other.id !== item.id).slice(0, 3);
+  const description = describe(item.summary, item.body) || item.title;
 
   return (
+    <>
+    <JsonLd
+      data={[
+        articleSchema({
+          type: "NewsArticle",
+          path: item.href,
+          headline: item.title,
+          description,
+          image: item.cover?.src ?? null,
+          published: item.postedAt,
+          modified: item.updatedAt,
+        }),
+        breadcrumbSchema([
+          { name: "News & Awards", path: "/news" },
+          { name: item.title, path: item.href },
+        ]),
+      ]}
+    />
     <ArticleLayout
       trail={[{ label: "News & Awards", href: "/news" }]}
       eyebrow={
@@ -88,5 +125,6 @@ export default async function NewsItemPage({ params }: { params: Promise<{ slug:
           : null
       }
     />
+    </>
   );
 }

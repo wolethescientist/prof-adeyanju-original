@@ -90,6 +90,8 @@ function refuseIfFixed(type: ContentType) {
 /** Refresh the public pages this section feeds, plus the admin list itself. */
 function refresh(type: ContentType) {
   for (const path of type.revalidates) revalidatePath(path);
+  /* The sitemap lists every public page, so search engines hear about a new one. */
+  revalidatePath("/sitemap.xml");
   /* Every article page in the section: a change can rename or hide one, and
      each page lists its neighbours under "More". A route pattern has to name
      the route group the public pages live in, or it matches nothing. */

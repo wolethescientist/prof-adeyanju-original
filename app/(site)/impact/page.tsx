@@ -9,12 +9,14 @@ import Reveal from "@/app/components/Reveal";
 import { Kicker, PageHeader, SectionHeading } from "@/app/components/ui";
 import { getInitiativeCards } from "@/app/lib/articles";
 import { getImpactStats, getSiteImages } from "@/app/lib/content";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Impact — Prof. Ibrahim Adepoju Adeyanju",
+export const metadata: Metadata = pageMetadata({
+  title: "Impact at Galaxy Backbone",
   description:
     "Initiatives delivered at Galaxy Backbone under Prof. Adeyanju: 1Government Cloud, GovMail, Project 774 and more.",
-};
+  path: "/impact",
+});
 
 export const revalidate = 300;
 

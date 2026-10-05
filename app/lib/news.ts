@@ -49,6 +49,7 @@ export type NewsArticle = NewsCard & {
   body: string | null;
   gallery: Picture[];
   attachment: Attachment | null;
+  postedAt: Date;
   updatedAt: Date;
 };
 
@@ -106,6 +107,7 @@ export async function getNewsItem(slug: string): Promise<NewsArticle | null> {
     body: story(row.body),
     gallery: await gallery(row.galleryIds, row.title),
     attachment: await attachment(row.attachmentId),
+    postedAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
 }

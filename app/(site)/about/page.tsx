@@ -3,14 +3,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Reveal from "@/app/components/Reveal";
+import JsonLd from "@/app/components/JsonLd";
 import { Kicker, PageHeader, SectionHeading } from "@/app/components/ui";
 import { getEducation, getGlance, getHonours } from "@/app/lib/content";
+import { pageMetadata } from "@/lib/seo";
+import { breadcrumbSchema, personSchema, profilePageSchema } from "@/lib/structured-data";
 
-export const metadata: Metadata = {
-  title: "About — Prof. Ibrahim Adepoju Adeyanju",
+export const metadata: Metadata = pageMetadata({
+  title: "About Prof. Ibrahim Adeyanju",
   description:
     "Professor of Computer Engineering, AI researcher and MD/CEO of Galaxy Backbone Limited.",
-};
+  path: "/about",
+});
 
 const memberships = [
   ["COREN", "Registered Computer Engineer"],
@@ -30,6 +34,13 @@ export default async function AboutPage() {
 
   return (
     <>
+      <JsonLd
+        data={[
+          personSchema(),
+          profilePageSchema(),
+          breadcrumbSchema([{ name: "About", path: "/about" }]),
+        ]}
+      />
       <PageHeader
         title="About Prof. Adeyanju"
         intro="Professor of Computer Engineering and Managing Director/CEO of Galaxy Backbone Limited."

@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import NewsFeed from "@/app/components/NewsFeed";
 import { PageHeader } from "@/app/components/ui";
 import { getNewsCards } from "@/app/lib/news";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "News & Awards — Prof. Ibrahim Adepoju Adeyanju",
+export const metadata: Metadata = pageMetadata({
+  title: "News & Awards",
   description:
     "Awards, invitations, lectures and press coverage for Prof. Ibrahim Adeyanju and Galaxy Backbone.",
-};
+  path: "/news",
+});
 
 export const revalidate = 300;
 
