@@ -156,17 +156,18 @@ body {
    The story on an article page, and the same text while it is being written
    in the CMS editor, so what the team types is what visitors read. */
 .article-body {
-  font-size: 1.0625rem;
-  line-height: 1.75;
+  font-size: 1.125rem;
+  line-height: 1.85;
   color: #1f2937;
+  text-wrap: pretty;
 }
-.article-body > * + * { margin-top: 1.15em; }
+.article-body > * + * { margin-top: 1.3em; }
 .article-body h2 {
   margin-top: 1.9em;
-  font-size: 1.65rem;
-  line-height: 1.25;
+  font-size: 1.75rem;
+  line-height: 1.2;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   color: var(--foreground);
 }
 .article-body h3 {

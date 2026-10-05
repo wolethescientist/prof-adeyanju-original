@@ -19,14 +19,14 @@ export default function CopyLink() {
           /* Clipboard access can be refused; the address bar still works. */
         }
       }}
-      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border bg-card px-4 py-3 text-sm font-semibold text-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer"
+      className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-lg border bg-card px-5 text-sm font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-primary"
     >
       {copied ? (
         <Check className="size-4 text-primary" aria-hidden="true" />
       ) : (
         <Link2 className="size-4" aria-hidden="true" />
       )}
-      <span aria-live="polite">{copied ? "Link copied" : "Copy link to share"}</span>
+      <span aria-live="polite">{copied ? "Link copied" : "Copy link"}</span>
     </button>
   );
 }

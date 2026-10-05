@@ -59,10 +59,12 @@ export default async function NewsItemPage({ params }: { params: Promise<{ slug:
     <ArticleLayout
       trail={[{ label: "News & Awards", href: "/news" }]}
       eyebrow={
-        <p className="text-sm text-muted-foreground">
-          <span className="font-semibold text-primary">{NEWS_CATEGORY_INFO[item.category].label}</span>
-          {item.when && <> · {item.when}</>}
-        </p>
+        <>
+          <span className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-sm font-semibold text-secondary-foreground">
+            {NEWS_CATEGORY_INFO[item.category].label}
+          </span>
+          {item.when && <span className="text-sm text-muted-foreground">{item.when}</span>}
+        </>
       }
       title={item.title}
       summary={item.summary}

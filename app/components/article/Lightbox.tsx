@@ -191,14 +191,24 @@ export function ZoomableImage({
 /** The photos under the story, each whole, in columns. `offset` is where its photos start in the viewer. */
 export function Gallery({ pictures, offset }: { pictures: Picture[]; offset: number }) {
   return (
-    <ul className="columns-2 gap-3 md:columns-3">
+    <ul
+      className={cn(
+        "gap-4",
+        /* Few photos get room to breathe; many sit in columns. */
+        pictures.length === 1
+          ? "mx-auto max-w-3xl"
+          : pictures.length === 2
+            ? "columns-1 sm:columns-2"
+            : "columns-2 md:columns-3"
+      )}
+    >
       {pictures.map((picture, i) => (
-        <li key={picture.id} className="mb-3 break-inside-avoid">
+        <li key={picture.id} className="mb-4 break-inside-avoid">
           <ZoomableImage
             picture={picture}
             index={offset + i}
-            sizes="(min-width: 768px) 240px, 50vw"
-            className="w-full"
+            sizes="(min-width: 768px) 540px, 100vw"
+            className="w-full overflow-hidden rounded-xl"
           />
         </li>
       ))}

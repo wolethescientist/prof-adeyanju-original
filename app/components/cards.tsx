@@ -8,7 +8,7 @@ import { NEWS_CATEGORY_INFO } from "@/lib/cms/news";
 import { cn } from "@/lib/utils";
 
 const card =
-  "group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card transition-colors hover:border-primary/40 focus-within:border-primary/40";
+  "group relative flex flex-col overflow-hidden rounded-2xl border bg-card transition-[border-color,box-shadow] duration-300 hover:border-primary/30 hover:shadow-[0_18px_40px_-18px_rgba(16,24,40,0.25)] focus-within:border-primary/30";
 
 /* The whole card is one link; the title carries it, stretched over the card. */
 const stretched = "after:absolute after:inset-0 after:content-[''] focus-visible:outline-none";
@@ -65,13 +65,15 @@ export function NewsCard({ item }: { item: News }) {
   return (
     <article className={card}>
       {item.cover && <Photo picture={item.cover} sizes={photoSizes} />}
-      <div className="flex grow flex-col p-5">
-        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-          <span className="font-semibold text-primary">{NEWS_CATEGORY_INFO[item.category].label}</span>
-          {item.when && <span>· {item.when}</span>}
+      <div className="flex grow flex-col p-6">
+        <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-muted-foreground">
+          <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[0.8rem] font-semibold text-secondary-foreground">
+            {NEWS_CATEGORY_INFO[item.category].label}
+          </span>
+          {item.when && <span>{item.when}</span>}
           {item.isNew && <NewTag />}
         </p>
-        <h3 className="mt-2 text-xl font-semibold leading-snug tracking-tight text-balance">
+        <h3 className="mt-3 text-xl font-semibold leading-snug tracking-[-0.015em] text-balance">
           <Link href={item.href} className={stretched}>
             {item.title}
           </Link>
@@ -95,7 +97,7 @@ export function InitiativeCard({ item }: { item: Initiative }) {
   return (
     <article className={card}>
       {item.cover && <Photo picture={item.cover} sizes={photoSizes} />}
-      <div className="flex grow flex-col p-5">
+      <div className="flex grow flex-col p-6">
         {!item.cover && (
           <span className="mb-4 grid size-10 place-items-center rounded-lg bg-secondary text-primary">
             <Icon className="size-5" aria-hidden="true" />

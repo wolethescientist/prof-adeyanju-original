@@ -59,9 +59,9 @@ export default function NewsFeed({ items }: { items: News[] }) {
         </div>
       )}
 
-      <ul className="grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="columns-1 gap-6 sm:columns-2 lg:columns-3">
         {shown.map((item) => (
-          <li key={item.id}>
+          <li key={item.id} className="mb-6 break-inside-avoid">
             <NewsCard item={item} />
           </li>
         ))}

@@ -118,9 +118,9 @@ export default async function Home() {
               </Button>
             </div>
 
-            <ul className="mt-8 grid items-start gap-6 md:grid-cols-3">
+            <ul className="mt-8 columns-1 gap-6 md:columns-3">
               {latest.map((item) => (
-                <li key={item.id}>
+                <li key={item.id} className="mb-6 break-inside-avoid">
                   <NewsCard item={item} />
                 </li>
               ))}

@@ -46,12 +46,10 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
         { label: "Initiatives", href: "/impact#initiatives" },
       ]}
       eyebrow={
-        <p className="flex items-center gap-2.5 text-xs font-medium text-primary">
-          <span className="grid size-8 place-items-center rounded-lg bg-secondary">
-            <Icon className="size-4" aria-hidden="true" />
-          </span>
+        <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-sm font-semibold text-secondary-foreground">
+          <Icon className="size-4" aria-hidden="true" />
           Initiative at Galaxy Backbone
-        </p>
+        </span>
       }
       title={item.title}
       summary={item.summary}
