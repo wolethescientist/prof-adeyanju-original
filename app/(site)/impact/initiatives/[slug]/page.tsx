@@ -46,7 +46,7 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
         { label: "Initiatives", href: "/impact#initiatives" },
       ]}
       eyebrow={
-        <p className="flex items-center gap-2.5 font-mono text-[0.72rem] font-medium uppercase tracking-[0.18em] text-primary">
+        <p className="flex items-center gap-2.5 text-xs font-medium text-primary">
           <span className="grid size-8 place-items-center rounded-lg bg-secondary">
             <Icon className="size-4" aria-hidden="true" />
           </span>

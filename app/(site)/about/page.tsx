@@ -2,9 +2,8 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import Reveal from "@/app/components/Reveal";
-import { Accent, Kicker, PageHeader, SectionHeading } from "@/app/components/ui";
-import { getEducation, getGlance } from "@/app/lib/content";
+import { Kicker, PageHeader, SectionHeading } from "@/app/components/ui";
+import { getEducation, getGlance, getHonours } from "@/app/lib/content";
 
 export const metadata: Metadata = {
   title: "About — Prof. Ibrahim Adepoju Adeyanju",
@@ -22,27 +21,23 @@ const memberships = [
 export const revalidate = 300;
 
 export default async function AboutPage() {
-  const [atAGlance, education] = await Promise.all([
+  const [atAGlance, education, honours] = await Promise.all([
     getGlance(),
     getEducation(),
+    getHonours(),
   ]);
 
   return (
     <>
       <PageHeader
-        kicker="About"
-        title={
-          <>
-            From first-class scholar to <Accent>national digital architect</Accent>
-          </>
-        }
-        intro="Engineer, professor and public sector leader — one career built across three continents."
+        title="About Prof. Adeyanju"
+        intro="Professor of Computer Engineering and Managing Director/CEO of Galaxy Backbone Limited."
       />
 
       {/* Bio + at a glance */}
-      <section className="relative py-20">
+      <section className="py-20">
         <div className="mx-auto max-w-6xl px-6 grid md:grid-cols-2 gap-14 items-start">
-          <Reveal>
+          <div>
             <div className="flex flex-col gap-5 text-lg text-muted-foreground leading-relaxed">
               <p>
                 Prof. Ibrahim Adepoju Adeyanju is a Professor of Computer
@@ -67,24 +62,17 @@ export default async function AboutPage() {
               </p>
             </div>
 
-            <blockquote className="mt-9 border-l-[3px] border-gold pl-6 py-1">
-              <p className="text-2xl italic leading-snug text-foreground">
-                One career, three continents — from the lecture theatre to the
-                boardroom of Nigeria&apos;s digital backbone.
-              </p>
-            </blockquote>
-          </Reveal>
+          </div>
 
-          <Reveal delay={150}>
-            <div className="relative overflow-hidden rounded-3xl border bg-card p-8 md:p-9 shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-              <div className="foil absolute inset-x-0 top-0 h-[3px]" aria-hidden="true" />
+          <div>
+            <div className="rounded-xl border bg-card p-8">
               <h2 className="mb-7">
                 <Kicker>At a glance</Kicker>
               </h2>
               <dl className="flex flex-col gap-5">
                 {atAGlance.map((row) => (
                   <div key={row.id} className="grid grid-cols-[8.5rem_1fr] gap-4 items-baseline">
-                    <dt className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                    <dt className="text-xs font-medium text-muted-foreground">
                       {row.label}
                     </dt>
                     <dd className="font-heading text-lg text-foreground leading-snug">
@@ -105,34 +93,29 @@ export default async function AboutPage() {
                 </div>
               ))}
             </div>
-          </Reveal>
+          </div>
         </div>
       </section>
 
       {/* Education */}
-      <section className="relative py-20 bg-card border-t">
+      <section className="py-20 bg-card border-t">
         <div className="mx-auto max-w-6xl px-6">
-          <Reveal>
+          <div>
             <SectionHeading
-              kicker="Universities"
-              title={
-                <>
-                  Trained on <Accent>three continents</Accent>
-                </>
-              }
+              title="Education"
             />
-          </Reveal>
+          </div>
 
           <div className="mt-12 border-t">
             {education.map((e, i) => (
-              <Reveal key={e.id} delay={i * 60}>
+              <div key={e.id}>
                 <a
                   href={e.href ?? undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group grid md:grid-cols-[9rem_1fr_auto_auto] gap-2 md:gap-8 items-baseline border-b py-7 px-2 cursor-pointer transition-colors duration-200 hover:bg-accent/60"
                 >
-                  <p className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-primary tabular-nums">{e.years}</p>
+                  <p className="text-xs font-medium text-primary tabular-nums">{e.years}</p>
                   <div>
                     <h3 className="text-xl md:text-2xl font-medium group-hover:text-primary transition-colors duration-200">
                       {e.degree}
@@ -149,23 +132,42 @@ export default async function AboutPage() {
                     aria-hidden="true"
                   />
                 </a>
-              </Reveal>
+              </div>
             ))}
           </div>
 
-          <Reveal delay={200}>
+          <div>
             <Button
               size="lg"
-              className="mt-10 h-12 rounded-full px-7 text-sm font-bold"
+              className="mt-10 h-11 rounded-lg px-6 text-sm font-bold"
               nativeButton={false}
               render={<Link href="/journey" />}
             >
               Follow the full journey
               <ArrowRight data-icon="inline-end" />
             </Button>
-          </Reveal>
+          </div>
         </div>
       </section>
+      {honours.length > 0 && (
+        <section id="honours" className="py-20 border-t">
+          <div className="mx-auto max-w-6xl px-6">
+            <SectionHeading title="Honours and fellowships" />
+            <ul className="mt-10 grid gap-x-12 md:grid-cols-2 border-t">
+              {honours.map((honour) => (
+                <li key={honour.id} className="border-b py-5">
+                  <p className="font-medium text-foreground">{honour.text}</p>
+                  {honour.description && (
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                      {honour.description}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
     </>
   );
 }

@@ -18,7 +18,7 @@ const EXPECTED = [
   "users", "sessions", "media", "site_images",
   "stats", "impact_stats", "marquee_items", "timeline_entries",
   "initiatives", "research_areas", "education_entries", "honours",
-  "awards", "press_items", "glance_items",
+  "awards", "press_items", "news_items", "glance_items",
 ];
 
 async function main() {
@@ -58,10 +58,10 @@ async function main() {
       return;
     }
 
-    console.log("  all 15 CMS tables present ✓");
+    console.log("  all 16 CMS tables present ✓");
 
     console.log("\nContent");
-    for (const table of ["awards", "press_items", "timeline_entries", "honours", "media", "site_images", "users"]) {
+    for (const table of ["news_items", "timeline_entries", "honours", "media", "site_images", "users"]) {
       const c = await client.query(`SELECT count(*)::int AS n FROM "${table}"`);
       console.log(`  ${table.padEnd(18)} ${c.rows[0].n}`);
     }

@@ -13,7 +13,7 @@ export default async function MediaPage() {
   return (
     <div className="flex flex-col gap-10">
       <div className="max-w-xl">
-        <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="text-xs font-medium text-muted-foreground">
           Library
         </p>
         <h1 className="mt-3 font-heading text-4xl font-medium tracking-tight">Photos &amp; PDFs</h1>
@@ -27,7 +27,7 @@ export default async function MediaPage() {
       <LibraryUploader />
 
       <section className="flex flex-col gap-4">
-        <h2 className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-xs font-medium text-muted-foreground">
           {images.length} {images.length === 1 ? "photo" : "photos"}
         </h2>
 
@@ -54,7 +54,7 @@ export default async function MediaPage() {
                     <p className="truncate text-sm font-semibold" title={image.filename}>
                       {image.filename}
                     </p>
-                    <p className="mt-0.5 font-mono text-[0.68rem] text-muted-foreground tabular-nums">
+                    <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">
                       {image.width && image.height ? `${image.width}×${image.height} · ` : ""}
                       {formatBytes(image.byteSize)}
                     </p>
@@ -71,7 +71,7 @@ export default async function MediaPage() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-xs font-medium text-muted-foreground">
           {files.length} {files.length === 1 ? "PDF" : "PDFs"}
         </h2>
         {files.length === 0 ? (
@@ -87,7 +87,7 @@ export default async function MediaPage() {
                 </span>
                 <span className="min-w-0 grow">
                   <span className="block truncate text-sm font-semibold">{file.filename}</span>
-                  <span className="block font-mono text-[0.68rem] text-muted-foreground">
+                  <span className="block text-xs text-muted-foreground">
                     {formatBytes(file.byteSize)}
                   </span>
                 </span>

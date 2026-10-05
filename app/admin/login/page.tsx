@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Laurel from "@/app/components/Laurel";
 import LoginForm from "./login-form";
 
 export const metadata: Metadata = {
@@ -24,23 +23,15 @@ export default async function LoginPage({
           fill
           priority
           sizes="50vw"
-          className="object-cover object-[50%_20%] opacity-30"
+          className="object-cover object-[50%_20%] opacity-20"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/30" aria-hidden="true" />
-        <div className="foil absolute inset-x-0 top-0 h-[3px]" aria-hidden="true" />
-
-        <p className="relative font-heading text-2xl font-semibold tracking-tight">
-          I.A. Adeyanju<span className="text-gold">.</span>
-        </p>
+        <p className="relative text-2xl font-semibold tracking-tight">I.A. Adeyanju</p>
 
         <div className="relative max-w-md">
-          <Laurel className="size-16 text-gold/80" />
-          <h1 className="mt-6 font-heading text-5xl font-medium leading-[1.05] tracking-tight">
-            The site manager
-          </h1>
-          <p className="mt-4 text-white/70 leading-relaxed">
-            Post awards, press coverage and initiatives — with photos, the full
-            story and a PDF — and they go live on the website as soon as you save.
+          <h1 className="text-4xl font-semibold leading-tight tracking-tight">The site manager</h1>
+          <p className="mt-4 text-white/80 leading-relaxed">
+            Post awards, invitations, lectures and press coverage, with photos, the full
+            story and a PDF. They go live on the website as soon as you save.
           </p>
         </div>
       </div>
@@ -48,16 +39,14 @@ export default async function LoginPage({
       <div className="grid place-items-center px-6 py-16">
         <div className="w-full max-w-sm">
           <div className="mb-8">
-            <p className="font-heading text-xl font-semibold tracking-tight lg:hidden">
-              I.A. Adeyanju<span className="text-gold">.</span>
-            </p>
-            <h2 className="mt-6 lg:mt-0 font-heading text-4xl font-medium tracking-tight">Sign in</h2>
+            <p className="text-xl font-semibold tracking-tight lg:hidden">I.A. Adeyanju</p>
+            <h2 className="mt-6 lg:mt-0 text-3xl font-semibold tracking-tight">Sign in</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Use the email and password for your site manager account.
             </p>
           </div>
 
-          <div className="rounded-2xl border bg-card p-6 shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+          <div className="rounded-xl border bg-card p-6">
             <LoginForm next={next} />
           </div>
 

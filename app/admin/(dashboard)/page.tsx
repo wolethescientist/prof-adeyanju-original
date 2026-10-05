@@ -14,7 +14,7 @@ import { SECTION_ICONS } from "@/app/admin/_components/section-icons";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyTable = any;
 
-/** The most recently edited articles across awards, press and initiatives. */
+/** The most recently edited articles across news and initiatives. */
 async function recentStories(limit = 5) {
   const articleTypes = CONTENT_TYPES.filter((type) => type.article);
   const batches = await Promise.all(
@@ -94,29 +94,23 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-12">
       <div>
-        <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="text-xs font-medium text-muted-foreground">
           Site manager
         </p>
-        <h1 className="mt-3 font-heading text-4xl md:text-5xl font-medium tracking-tight">
-          Welcome back
-          {firstName && (
-            <>
-              , <em className="italic font-normal text-primary">{firstName}</em>
-            </>
-          )}
-          .
+        <h1 className="mt-3 text-3xl md:text-4xl font-semibold tracking-tight">
+          Welcome back{firstName ? `, ${firstName}` : ""}
         </h1>
         <p className="mt-3 max-w-xl text-muted-foreground">
-          Post a new story or update any part of the website. Everything you save
-          appears on the site straight away.
+          Post an award, an invitation or a piece of news, or update any part of the
+          website. Everything you save appears on the site straight away.
         </p>
       </div>
 
       <section aria-labelledby="write" className="flex flex-col gap-4">
-        <h2 id="write" className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 id="write" className="text-xs font-medium text-muted-foreground">
           Write something new
         </h2>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           {articleTypes.map((type, i) => {
             const Icon = SECTION_ICONS[type.icon];
             return (
@@ -124,33 +118,30 @@ export default async function DashboardPage() {
                 key={type.slug}
                 href={`/admin/content/${type.slug}/new`}
                 className={cn(
-                  "group relative flex flex-col overflow-hidden rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_35px_rgba(16,24,40,0.10)]",
-                  i === 0 ? "bg-ink text-white border-ink" : "bg-card"
+                  "group relative flex flex-col rounded-xl border p-5 transition-colors hover:border-primary/60",
+                  i === 0 ? "bg-primary text-primary-foreground border-primary" : "bg-card"
                 )}
               >
-                {i === 0 && <span className="foil absolute inset-x-0 top-0 h-[3px]" aria-hidden="true" />}
                 <span
                   className={cn(
-                    "grid size-10 place-items-center rounded-xl",
-                    i === 0 ? "bg-white/10 text-[#f3dc9b]" : "bg-secondary text-primary"
+                    "grid size-10 place-items-center rounded-lg",
+                    i === 0 ? "bg-white/15" : "bg-secondary text-primary"
                   )}
                 >
                   <Icon className="size-5" aria-hidden="true" />
                 </span>
-                <span className="mt-6 font-heading text-xl font-medium">
-                  New {type.singular.toLowerCase()}
+                <span className="mt-5 text-lg font-semibold">
+                  {type.slug === "news" ? "Post an update" : `New ${type.singular.toLowerCase()}`}
                 </span>
-                <span className={cn("mt-1 text-sm", i === 0 ? "text-white/65" : "text-muted-foreground")}>
-                  {type.slug === "awards"
-                    ? "Photos, the full story and a PDF"
-                    : type.slug === "press"
-                      ? "An article or interview about him"
-                      : "A programme at Galaxy Backbone"}
+                <span className={cn("mt-1 text-sm", i === 0 ? "text-primary-foreground/85" : "text-muted-foreground")}>
+                  {type.slug === "news"
+                    ? "An award, an invitation or lecture, press coverage or other news"
+                    : "A programme at Galaxy Backbone"}
                 </span>
                 <PenLine
                   className={cn(
-                    "absolute right-5 top-5 size-4 transition-transform group-hover:-rotate-12",
-                    i === 0 ? "text-white/50" : "text-muted-foreground"
+                    "absolute right-5 top-5 size-4",
+                    i === 0 ? "text-primary-foreground/70" : "text-muted-foreground"
                   )}
                   aria-hidden="true"
                 />
@@ -162,7 +153,7 @@ export default async function DashboardPage() {
 
       {stories.length > 0 && (
         <section aria-labelledby="recent" className="flex flex-col gap-4">
-          <h2 id="recent" className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          <h2 id="recent" className="text-xs font-medium text-muted-foreground">
             Recently edited
           </h2>
           <ul className="overflow-hidden rounded-2xl border bg-card divide-y">
@@ -182,12 +173,12 @@ export default async function DashboardPage() {
                         className="h-12 w-16 shrink-0 rounded-lg border object-cover object-[50%_22%]"
                       />
                     ) : (
-                      <span className="grid h-12 w-16 shrink-0 place-items-center rounded-lg bg-ink text-gold">
+                      <span className="grid h-12 w-16 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
                         <Icon className="size-4" aria-hidden="true" />
                       </span>
                     )}
                     <span className="min-w-0 grow">
-                      <span className="block truncate font-heading text-lg leading-snug group-hover:text-primary transition-colors">
+                      <span className="block truncate text-base font-semibold leading-snug group-hover:text-primary transition-colors">
                         {story.title}
                       </span>
                       <span className="block text-xs text-muted-foreground">
@@ -209,7 +200,7 @@ export default async function DashboardPage() {
 
       {groups.map((group) => (
         <section key={group} className="flex flex-col gap-4">
-          <h2 className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          <h2 className="text-xs font-medium text-muted-foreground">
             {group}
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -248,7 +239,7 @@ export default async function DashboardPage() {
       ))}
 
       <section className="flex flex-col gap-4">
-        <h2 className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-xs font-medium text-muted-foreground">
           Library
         </h2>
         <Link

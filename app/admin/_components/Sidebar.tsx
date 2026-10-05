@@ -56,10 +56,10 @@ export default function Sidebar({ user }: Props) {
         size="lg"
         className="h-10 justify-start gap-2 rounded-lg font-bold"
         nativeButton={false}
-        render={<Link href="/admin/content/awards/new" />}
+        render={<Link href="/admin/content/news/new" />}
       >
         <PenLine data-icon="inline-start" />
-        New award
+        Post an update
       </Button>
 
       <div className="flex flex-col gap-0.5">
@@ -69,7 +69,7 @@ export default function Sidebar({ user }: Props) {
 
       {groups.map((group) => (
         <div key={group} className="flex flex-col gap-0.5">
-          <p className="px-3 pb-1.5 font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">
+          <p className="px-3 pb-1.5 text-xs font-medium text-muted-foreground/80">
             {group}
           </p>
           {CONTENT_TYPES.filter((t) => t.group === group).map((type) =>
@@ -79,7 +79,7 @@ export default function Sidebar({ user }: Props) {
       ))}
 
       <div className="flex flex-col gap-0.5">
-        <p className="px-3 pb-1.5 font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">
+        <p className="px-3 pb-1.5 text-xs font-medium text-muted-foreground/80">
           Settings
         </p>
         {link("/admin/account", "Your account", UserCircle)}
@@ -91,7 +91,7 @@ export default function Sidebar({ user }: Props) {
   const footer = (
     <div className="mt-auto pt-6 flex flex-col gap-1 border-t">
       <div className="flex items-center gap-3 px-3 pb-2">
-        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-secondary font-mono text-xs font-semibold text-secondary-foreground">
+        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
           {user.name
             .split(/\s+/)
             .slice(0, 2)
@@ -120,9 +120,9 @@ export default function Sidebar({ user }: Props) {
   const brand = (
     <Link href="/admin" className="block">
       <span className="font-heading text-xl font-semibold tracking-tight">
-        I.A. Adeyanju<span className="text-gold">.</span>
+        I.A. Adeyanju
       </span>
-      <span className="mt-0.5 block font-mono text-[0.62rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+      <span className="mt-0.5 block text-xs font-medium text-muted-foreground">
         Site manager
       </span>
     </Link>

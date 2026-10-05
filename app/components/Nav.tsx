@@ -12,49 +12,26 @@ const links = [
   { href: "/journey", label: "Journey" },
   { href: "/impact", label: "Impact" },
   { href: "/research", label: "Research" },
-  { href: "/recognition", label: "Recognition" },
+  { href: "/news", label: "News & Awards" },
 ];
 
 export default function Nav() {
   const pathname = usePathname();
-  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 24);
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(max > 0 ? window.scrollY / max : 0);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => setOpen(false), [pathname]);
 
   return (
-    <header className="fixed top-4 left-4 right-4 z-50 flex justify-center">
-      <div
-        className="fixed top-0 left-0 right-0 h-[3px] bg-primary origin-left z-50"
-        style={{ transform: `scaleX(${progress})` }}
-        aria-hidden="true"
-      />
+    <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur">
       <nav
-        className={cn(
-          "w-full max-w-5xl rounded-full bg-card/90 backdrop-blur-md border px-6 py-3 flex items-center justify-between transition-shadow duration-300",
-          scrolled
-            ? "shadow-[0_10px_35px_rgba(16,24,40,0.1)]"
-            : "shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
-        )}
+        className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6"
         aria-label="Main navigation"
       >
         <Link
           href="/"
-          className="font-heading font-semibold text-xl tracking-tight text-foreground hover:text-primary transition-colors duration-200"
+          className="text-lg font-semibold tracking-tight text-foreground hover:text-primary transition-colors"
         >
-          I.A. Adeyanju<span className="text-primary">.</span>
+          I.A. Adeyanju
         </Link>
 
         <ul className="hidden md:flex items-center gap-7">
@@ -67,7 +44,7 @@ export default function Nav() {
                   href={l.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "text-sm transition-colors duration-200",
+                    "text-sm transition-colors",
                     active
                       ? "text-primary font-semibold"
                       : "text-muted-foreground font-medium hover:text-primary"
@@ -81,7 +58,7 @@ export default function Nav() {
         </ul>
 
         <Button
-          className="hidden md:inline-flex rounded-full px-5 font-semibold"
+          className="hidden md:inline-flex font-semibold"
           nativeButton={false}
           render={<a href="#contact" />}
         >
@@ -91,38 +68,38 @@ export default function Nav() {
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden rounded-full"
+          className="md:hidden"
           onClick={() => setOpen(!open)}
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
         >
           {open ? <X /> : <Menu />}
         </Button>
-
-        {open && (
-          <ul className="absolute top-full left-0 right-0 mt-3 md:hidden rounded-3xl border bg-card p-4 flex flex-col gap-1 shadow-xl">
-            {links.map((l) => (
-              <li key={l.href}>
-                <Link
-                  href={l.href}
-                  className="block rounded-xl px-4 py-3 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
-                >
-                  {l.label}
-                </Link>
-              </li>
-            ))}
-            <li>
-              <a
-                href="#contact"
-                onClick={() => setOpen(false)}
-                className="block rounded-xl px-4 py-3 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
-              >
-                Contact
-              </a>
-            </li>
-          </ul>
-        )}
       </nav>
+
+      {open && (
+        <ul className="md:hidden border-t bg-card px-6 py-3 flex flex-col">
+          {links.map((l) => (
+            <li key={l.href}>
+              <Link
+                href={l.href}
+                className="block py-3 text-sm font-medium text-foreground hover:text-primary"
+              >
+                {l.label}
+              </Link>
+            </li>
+          ))}
+          <li>
+            <a
+              href="#contact"
+              onClick={() => setOpen(false)}
+              className="block py-3 text-sm font-medium text-foreground hover:text-primary"
+            >
+              Contact
+            </a>
+          </li>
+        </ul>
+      )}
     </header>
   );
 }

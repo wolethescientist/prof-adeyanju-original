@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Download, Expand, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, X } from "lucide-react";
 import Image from "next/image";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { Picture } from "@/app/lib/articles";
@@ -80,7 +80,7 @@ export function LightboxProvider({
             if (event.target === event.currentTarget) dialog.current?.close();
           }}>
             <div className="flex items-center justify-between gap-4 px-4 py-3 md:px-6">
-              <p className="font-mono text-xs tracking-[0.15em] text-white/70">
+              <p className="text-xs text-white/70">
                 {many ? `${index + 1} / ${pictures.length}` : ""}
               </p>
               <div className="flex items-center gap-1">
@@ -149,71 +149,56 @@ export function LightboxProvider({
   );
 }
 
-/** A photo on the page that opens the viewer at its own position. */
+/**
+ * A photo on the page that opens the viewer at its own position. It is shown
+ * whole, at its own proportions, with nothing behind it; a very tall photo is
+ * capped to the height of the screen rather than cropped.
+ */
 export function ZoomableImage({
   picture,
   index,
   sizes,
   className,
   priority = false,
-  fit = "cover",
 }: {
   picture: Picture;
   index: number;
   sizes: string;
   className?: string;
   priority?: boolean;
-  /** "contain" shows the whole photo; "cover" fills the frame (gallery tiles). */
-  fit?: "cover" | "contain";
 }) {
   const open = useContext(LightboxContext);
   return (
     <button
       type="button"
       onClick={() => open(index)}
-      className={cn("group relative block w-full overflow-hidden cursor-zoom-in", className)}
+      className={cn("block cursor-zoom-in", className)}
       aria-label={`View photo full size: ${picture.alt}`}
     >
       <Image
         src={picture.src}
         alt={picture.alt}
-        fill
+        width={picture.width ?? 1600}
+        height={picture.height ?? 1000}
         sizes={sizes}
         priority={priority}
-        /* Gallery tiles are cropped toward the top, where faces usually are;
-           the cover is shown whole. */
-        className={cn(
-          "transition-transform duration-700 ease-out",
-          fit === "contain"
-            ? "object-contain group-hover:scale-[1.01]"
-            : "object-cover object-[50%_22%] group-hover:scale-[1.03]"
-        )}
+        className="h-auto w-full max-h-[78vh] object-contain"
       />
-      <span className="absolute right-3 bottom-3 grid size-9 place-items-center rounded-full bg-ink/70 text-white opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
-        <Expand className="size-4" aria-hidden="true" />
-      </span>
     </button>
   );
 }
 
-/** The photo grid under the story. `offset` is where its photos start in the viewer. */
+/** The photos under the story, each whole, in columns. `offset` is where its photos start in the viewer. */
 export function Gallery({ pictures, offset }: { pictures: Picture[]; offset: number }) {
   return (
-    <ul className="grid grid-cols-2 md:grid-cols-3 gap-3">
+    <ul className="columns-2 gap-3 md:columns-3">
       {pictures.map((picture, i) => (
-        <li
-          key={picture.id}
-          className={cn(
-            "overflow-hidden rounded-xl bg-muted",
-            /* A lone first photo of an odd set leads at double width. */
-            pictures.length % 2 === 1 && pictures.length > 1 && i === 0 ? "col-span-2 md:col-span-2 md:row-span-2" : ""
-          )}
-        >
+        <li key={picture.id} className="mb-3 break-inside-avoid">
           <ZoomableImage
             picture={picture}
             index={offset + i}
-            sizes="(min-width: 768px) 360px, 50vw"
-            className="aspect-square h-full"
+            sizes="(min-width: 768px) 240px, 50vw"
+            className="w-full"
           />
         </li>
       ))}

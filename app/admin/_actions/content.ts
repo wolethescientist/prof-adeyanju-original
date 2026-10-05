@@ -123,8 +123,24 @@ async function uniqueSlug(type: ContentType, title: string) {
 /** Turns the posted form into the shape the table expects. */
 function readForm(type: ContentType, formData: FormData) {
   const raw: Record<string, unknown> = {};
+  /* Fields the form hid for the chosen kind of entry (see `showWhen`). Whatever
+     they held is ignored and saved empty, so an award's "Awarded to" does not
+     linger on an item that was switched to something else. */
+  const hidden = new Set<string>();
 
   for (const field of type.fields) {
+    if (field.showWhen) {
+      const chosen = String(formData.get(field.showWhen.field) ?? "");
+      if (!field.showWhen.values.includes(chosen)) {
+        hidden.add(field.name);
+        raw[field.name] = "";
+        continue;
+      }
+    }
+    if (field.type === "toggle") {
+      raw[field.name] = formData.get(field.name) === "on";
+      continue;
+    }
     if (field.type === "gallery") {
       /* One hidden input per photo, in the order the editor shows them. */
       raw[field.name] = formData
@@ -165,7 +181,9 @@ function readForm(type: ContentType, formData: FormData) {
       const html = cleanRichText(values[field.name] as string | null);
       values[field.name] = hasText(html) ? html : "";
     }
-    if (values[field.name] === "" && !field.required) {
+    if (hidden.has(field.name)) {
+      values[field.name] = null;
+    } else if (values[field.name] === "" && !field.required) {
       values[field.name] = columns[field.name]?.notNull ? "" : null;
     }
   }

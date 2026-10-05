@@ -71,7 +71,7 @@ export default function GalleryField({
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <FieldLabel field={field} />
         {photos.length > 0 && (
-          <span className="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             {photos.length} {photos.length === 1 ? "photo" : "photos"}
           </span>
         )}
@@ -81,12 +81,12 @@ export default function GalleryField({
       ))}
 
       {photos.length > 0 && (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <ul className="grid grid-cols-2 items-start gap-3 sm:grid-cols-3">
           {photos.map((photo, index) => (
-            <li key={photo.id} className="group relative overflow-hidden rounded-xl border bg-muted">
+            <li key={photo.id} className="group relative overflow-hidden rounded-xl border">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={mediaUrl(photo)!} alt={photo.alt} className="aspect-[4/3] w-full object-cover" />
-              <span className="absolute left-2 top-2 rounded-md bg-ink/70 px-1.5 py-0.5 font-mono text-[0.65rem] text-white">
+              <img src={mediaUrl(photo)!} alt={photo.alt} className="h-auto w-full" />
+              <span className="absolute left-2 top-2 rounded-md bg-ink/70 px-1.5 py-0.5 text-xs text-white">
                 {index + 1}
               </span>
               <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-ink/75 to-transparent p-2 pt-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity">

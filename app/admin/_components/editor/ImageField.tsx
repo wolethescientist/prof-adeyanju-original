@@ -14,6 +14,9 @@ import { sendUpload } from "./upload-client";
 
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
 
+const photoButton =
+  "inline-flex cursor-pointer items-center gap-1.5 rounded-full border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/50 hover:text-primary";
+
 /**
  * One photo — an article's cover, or an image slot. Drop or choose a file to
  * upload it on the spot, or pick something already in the library.
@@ -69,26 +72,25 @@ export default function ImageField({
       <input type="hidden" name={field.name} value={chosen ? id : ""} />
 
       {chosen ? (
-        <div className={cn("group relative overflow-hidden", cover ? "rounded-t-2xl bg-ink" : "rounded-xl border bg-muted")}>
-          {/* The whole photo, as visitors will see it — never cropped. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={mediaUrl(chosen)!}
-            alt={chosen.alt}
-            className={cn("mx-auto w-auto object-contain", cover ? "max-h-[26rem]" : "max-h-64")}
-          />
-          {uploading && (
-            <div className="absolute inset-0 grid place-items-center bg-ink/50 text-white">
-              <Loader2 className="size-7 animate-spin" aria-label="Uploading" />
-            </div>
-          )}
-          <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-end gap-2 bg-gradient-to-t from-ink/70 to-transparent p-3 pt-10">
-            {cover && (
-              <span className="mr-auto rounded-full bg-ink/60 px-3 py-1 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-white/90 backdrop-blur-sm">
-                Cover photo
-              </span>
+        <div className={cn("overflow-hidden", cover ? "rounded-t-2xl" : "rounded-xl border")}>
+          {/* The whole photo, as visitors will see it — never cropped, with
+              nothing behind or over it. */}
+          <div className="relative">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={mediaUrl(chosen)!}
+              alt={chosen.alt}
+              className={cn("mx-auto w-auto object-contain", cover ? "max-h-[26rem]" : "max-h-64")}
+            />
+            {uploading && (
+              <div className="absolute inset-0 grid place-items-center bg-white/60">
+                <Loader2 className="size-7 animate-spin text-primary" aria-label="Uploading" />
+              </div>
             )}
-            <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-white">
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-2 border-t bg-card px-3 py-2.5">
+            {cover && <span className="mr-auto text-sm font-semibold text-muted-foreground">Cover photo</span>}
+            <label className={photoButton}>
               <RefreshCw className="size-3.5" aria-hidden="true" />
               Replace
               <input
@@ -101,19 +103,11 @@ export default function ImageField({
                 }}
               />
             </label>
-            <button
-              type="button"
-              onClick={() => setPicking(true)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-white cursor-pointer"
-            >
+            <button type="button" onClick={() => setPicking(true)} className={photoButton}>
               <Images className="size-3.5" aria-hidden="true" />
-              Library
+              Choose from library
             </button>
-            <button
-              type="button"
-              onClick={() => setId("")}
-              className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-destructive hover:bg-white cursor-pointer"
-            >
+            <button type="button" onClick={() => setId("")} className={cn(photoButton, "text-destructive")}>
               <Trash2 className="size-3.5" aria-hidden="true" />
               Remove
             </button>

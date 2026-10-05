@@ -1,28 +1,11 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Newsreader, Public_Sans } from "next/font/google";
+import { Public_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
 const publicSans = Public_Sans({
   subsets: ["latin"],
   variable: "--font-public-sans",
-});
-
-/* Headlines and article text: an editorial serif, for a site that is mostly
-   citations, honours and stories. Optical sizing keeps it crisp at 14px and
-   graceful at 72px. */
-const newsreader = Newsreader({
-  subsets: ["latin"],
-  variable: "--font-newsreader",
-  style: ["normal", "italic"],
-  axes: ["opsz"],
-});
-
-/* Dates, years and labels — the record-keeping voice. */
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-plex-mono",
 });
 
 export const metadata: Metadata = {
@@ -55,9 +38,7 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={cn(
         "h-full antialiased",
-        publicSans.variable,
-        newsreader.variable,
-        plexMono.variable
+        publicSans.variable
       )}
     >
       <body className="min-h-full flex flex-col">{children}</body>

@@ -59,7 +59,7 @@ export default async function ContentListPage({
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div className="max-w-xl">
-          <p className="flex items-center gap-2 font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
             <Icon className="size-3.5" aria-hidden="true" />
             {type.group}
           </p>
@@ -99,7 +99,7 @@ export default async function ContentListPage({
       ) : (
         <div className="flex flex-col gap-3">
           {!type.fixed && (
-            <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-xs font-medium text-muted-foreground">
               {rows.length} {rows.length === 1 ? singular : `${singular}s`} · {visible} on the website
               {type.article ? " · shown in this order" : ""}
             </p>
@@ -143,14 +143,14 @@ export default async function ContentListPage({
                           )}
                         />
                       ) : (
-                        <span className="grid h-14 w-20 place-items-center rounded-lg bg-ink text-gold">
+                        <span className="grid h-14 w-20 place-items-center rounded-lg bg-secondary text-primary">
                           <Icon className="size-5" />
                         </span>
                       )}
                     </Link>
                   ) : (
                     !type.fixed && (
-                      <span className="w-6 shrink-0 font-mono text-xs text-muted-foreground/70 tabular-nums">
+                      <span className="w-6 shrink-0 text-xs text-muted-foreground/70 tabular-nums">
                         {index + 1}
                       </span>
                     )

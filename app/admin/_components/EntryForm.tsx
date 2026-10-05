@@ -111,7 +111,7 @@ function GrowingText({
           <FieldHelp field={field} />
         </div>
         {field.maxLength && length > field.maxLength * 0.8 && (
-          <span className="shrink-0 font-mono text-[0.68rem] text-muted-foreground tabular-nums">
+          <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
             {length} / {field.maxLength}
           </span>
         )}
@@ -120,21 +120,39 @@ function GrowingText({
   );
 }
 
-/** A few fixed options, as a row of buttons — e.g. who an award went to. */
-function ChoiceField({ field, defaultValue, error }: { field: Field; defaultValue: string; error?: string }) {
+/**
+ * A few fixed options, as a row of buttons — e.g. who an award went to. With
+ * `appearance: "kind"` each option is a card with a line of explanation, for
+ * the question the team answers first.
+ */
+function ChoiceField({
+  field,
+  defaultValue,
+  error,
+  onChange,
+}: {
+  field: Field;
+  defaultValue: string;
+  error?: string;
+  onChange?: (value: string) => void;
+}) {
   const options = field.options ?? [];
   const [value, setValue] = useState(defaultValue || options[0]?.value || "");
+  const kind = field.appearance === "kind";
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 text-sm font-semibold">{field.label}</legend>
-      <div className="grid grid-cols-2 gap-2">
+      <legend className={cn("mb-2 font-semibold", kind ? "text-base" : "text-sm")}>{field.label}</legend>
+      <div className={cn("grid gap-2", kind ? "sm:grid-cols-2 lg:grid-cols-4" : "grid-cols-2")}>
         {options.map((option) => (
           <label
             key={option.value}
             className={cn(
-              "flex cursor-pointer items-center justify-center whitespace-nowrap rounded-xl border px-2 py-2.5 text-center text-[0.8rem] font-semibold transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
+              "flex cursor-pointer rounded-xl border transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
+              kind
+                ? "flex-col gap-1 px-4 py-3 text-left"
+                : "items-center justify-center whitespace-nowrap px-2 py-2.5 text-center text-[0.8rem] font-semibold",
               value === option.value
-                ? "border-ink bg-ink text-white"
+                ? "border-primary bg-primary text-primary-foreground"
                 : "bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground"
             )}
           >
@@ -143,16 +161,51 @@ function ChoiceField({ field, defaultValue, error }: { field: Field; defaultValu
               name={field.name}
               value={option.value}
               checked={value === option.value}
-              onChange={() => setValue(option.value)}
+              onChange={() => {
+                setValue(option.value);
+                onChange?.(option.value);
+              }}
               className="sr-only"
             />
-            {option.label}
+            <span className={cn(kind && "text-sm font-semibold")}>{option.label}</span>
+            {kind && option.help && (
+              <span
+                className={cn(
+                  "text-xs font-normal leading-snug",
+                  value === option.value ? "text-primary-foreground/85" : "text-muted-foreground"
+                )}
+              >
+                {option.help}
+              </span>
+            )}
           </label>
         ))}
       </div>
       {error && <FieldError message={error} />}
       <FieldHelp field={field} />
     </fieldset>
+  );
+}
+
+/** A yes/no switch, on by default for a new entry. */
+function ToggleField({ field, initial }: { field: Field; initial?: Record<string, unknown> }) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3">
+      <span className="relative mt-0.5 inline-flex shrink-0">
+        <input
+          type="checkbox"
+          name={field.name}
+          defaultChecked={initial ? Boolean(initial[field.name]) : true}
+          className="peer sr-only"
+        />
+        <span className="h-6 w-10 rounded-full bg-muted-foreground/30 transition-colors peer-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2" />
+        <span className="absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
+      </span>
+      <span>
+        <span className="block text-sm font-semibold">{field.label}</span>
+        {field.help && <span className="mt-0.5 block text-xs text-muted-foreground">{field.help}</span>}
+      </span>
+    </label>
   );
 }
 
@@ -269,7 +322,25 @@ export default function EntryForm({
     return raw === null || raw === undefined ? "" : String(raw);
   };
 
-  const render = (field: Field) => {
+  /* The answer to each choice, so fields can follow it: an award shows
+     "Awarded to", a lecture says "Hosted by". */
+  const [choices, setChoices] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      spec.fields
+        .filter((field) => field.type === "choice")
+        .map((field) => [field.name, value(field.name) || field.options?.[0]?.value || ""])
+    )
+  );
+
+  const render = (original: Field) => {
+    const follows = original.showWhen?.field ?? original.watch;
+    const answer = follows ? choices[follows] : undefined;
+    if (original.showWhen && !original.showWhen.values.includes(answer ?? "")) return null;
+    const field: Field = {
+      ...original,
+      label: (answer && original.labelWhen?.[answer]) || original.label,
+      placeholder: (answer && original.placeholderWhen?.[answer]) ?? original.placeholder,
+    };
     const error = errors[field.name];
     switch (field.type) {
       case "image":
@@ -293,7 +364,17 @@ export default function EntryForm({
           </div>
         );
       case "choice":
-        return <ChoiceField key={field.name} field={field} defaultValue={value(field.name)} error={error} />;
+        return (
+          <ChoiceField
+            key={field.name}
+            field={field}
+            defaultValue={value(field.name)}
+            error={error}
+            onChange={(next) => setChoices((current) => ({ ...current, [field.name]: next }))}
+          />
+        );
+      case "toggle":
+        return <ToggleField key={field.name} field={field} initial={initial} />;
       case "icon":
         return <IconField key={field.name} field={field} defaultValue={value(field.name)} />;
       default:
@@ -382,7 +463,8 @@ export default function EntryForm({
   };
 
   if (spec.article) {
-    const main = spec.fields.filter((field) => field.placement !== "side");
+    const kind = spec.fields.find((field) => field.appearance === "kind");
+    const main = spec.fields.filter((field) => field.placement !== "side" && field !== kind);
     const side = spec.fields.filter((field) => field.placement === "side");
     const cover = main.find((field) => field.appearance === "cover");
     const writing = main.filter((field) => field !== cover);
@@ -390,7 +472,10 @@ export default function EntryForm({
     return (
       <EditorProvider images={images} files={files} titleField={spec.titleField}>
         <form {...formProps} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
-          <div className="min-w-0 overflow-hidden rounded-2xl border bg-card shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+          {kind && (
+            <div className="rounded-2xl border bg-card p-5 lg:col-span-2">{render(kind)}</div>
+          )}
+          <div className="min-w-0 overflow-hidden rounded-2xl border bg-card">
             {cover && render(cover)}
             <div className="flex flex-col gap-8 px-6 py-8 md:px-8">
               {writing.map(render)}
@@ -419,7 +504,7 @@ export default function EntryForm({
               )}
             </div>
             <div className="flex flex-col gap-5 rounded-2xl border bg-card p-5">
-              <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs font-medium text-muted-foreground">
                 Details
               </p>
               {side.map(render)}

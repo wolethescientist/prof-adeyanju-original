@@ -24,7 +24,7 @@ export default function DescriptionEditor({ id, alt }: { id: string; alt: string
         })
       }
     >
-      <label htmlFor={`alt-${id}`} className="text-[0.7rem] font-semibold uppercase tracking-wide text-muted-foreground">
+      <label htmlFor={`alt-${id}`} className="text-[0.7rem] font-semibold tracking-wide text-muted-foreground">
         Description
       </label>
       <div className="flex gap-1.5">

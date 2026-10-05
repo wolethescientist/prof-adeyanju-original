@@ -116,6 +116,47 @@ const articleColumns = () => ({
 export const AWARD_RECIPIENTS = ["personal", "gbb"] as const;
 export type AwardRecipient = (typeof AWARD_RECIPIENTS)[number];
 
+/**
+ * What a news item is about. Plain words, because the media team picks one
+ * every time they post: an award, an invitation or lecture, coverage in the
+ * press, or anything else worth announcing.
+ */
+export const NEWS_CATEGORIES = ["award", "invitation", "press", "announcement"] as const;
+export type NewsCategory = (typeof NEWS_CATEGORIES)[number];
+
+/**
+ * News & Awards — the one place the media team announces things: an award,
+ * an invitation to give a lecture, a selection, coverage in the press.
+ * Each item is an article with a cover photo, a summary for the cards, the
+ * full story, a gallery and an optional PDF.
+ *
+ * Replaces the separate `awards` and `press_items` tables, which migration
+ * 0003 copied in. Those tables are left in place for one deploy so the
+ * previous version of the site keeps working while the new one builds.
+ */
+export const newsItems = pgTable("news_items", {
+  ...contentColumns,
+  ...articleColumns(),
+  title: text("title").notNull(),
+  category: text("category", { enum: NEWS_CATEGORIES }).notNull().default("announcement"),
+  /* When it happened — presented, delivered, published. */
+  happenedOn: date("happened_on"),
+  /* Only for items carried over from awards that recorded a year and no date;
+     shown when there is no date. The form does not edit it. */
+  year: text("year"),
+  /* The short summary shown on the cards. */
+  summary: text("summary"),
+  /* Who presented the award, hosts the lecture or published the article. */
+  source: text("source"),
+  /* The original article, or the event's page. */
+  href: text("href"),
+  /* Awards only: who it was given to. */
+  recipient: text("recipient", { enum: AWARD_RECIPIENTS }),
+  imageId: uuid("image_id").references(() => media.id, { onDelete: "set null" }),
+  /* Shown in "Latest" under the home page's hero. */
+  featured: boolean("featured").notNull().default(true),
+});
+
 /** The animated counters in the dark band on the home page. */
 export const stats = pgTable("stats", {
   ...contentColumns,
@@ -287,6 +328,19 @@ export const awardRelations = relations(awards, ({ one }) => ({
 
 export const siteImageRelations = relations(siteImages, ({ one }) => ({
   image: one(media, { fields: [siteImages.imageId], references: [media.id] }),
+}));
+
+export const newsRelations = relations(newsItems, ({ one }) => ({
+  image: one(media, {
+    fields: [newsItems.imageId],
+    references: [media.id],
+    relationName: "news_image",
+  }),
+  attachment: one(media, {
+    fields: [newsItems.attachmentId],
+    references: [media.id],
+    relationName: "news_attachment",
+  }),
 }));
 
 export const pressRelations = relations(pressItems, ({ one }) => ({

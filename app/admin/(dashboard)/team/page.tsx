@@ -85,7 +85,7 @@ export default async function TeamPage() {
       </ul>
 
       <section className="flex flex-col gap-3 max-w-lg">
-        <h2 className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+        <h2 className="text-xs font-medium text-muted-foreground">
           Add someone
         </h2>
         <AddUserForm />

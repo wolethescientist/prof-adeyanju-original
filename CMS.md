@@ -8,70 +8,79 @@ immediately, with no redeploy and no developer involved.
 
 ## What the team can edit
 
-### Stories — awards, press coverage and initiatives
+### News & Awards
 
-These three are **articles**. Each entry has its own page on the site, and a
-card that links to it:
+Everything the team announces goes in one place: **News & Awards**. Choose
+**Post an update** and answer one question first, *What kind of update is
+this?*
 
-| Section | Card appears on | Its page |
-|---|---|---|
-| Awards | `/recognition`, home | `/recognition/awards/<address>` |
-| Press coverage | `/recognition`, home | `/recognition/press/<address>` |
-| Initiatives | `/impact`, home | `/impact/initiatives/<address>` |
+| Kind | Use it for |
+|---|---|
+| Award | An award given to Prof. Adeyanju or to Galaxy Backbone |
+| Invitation or lecture | Invited, selected or appointed to speak, lecture or take part |
+| In the press | An article or interview about him |
+| Other news | Anything else worth announcing |
 
-Writing one works like posting an article: drop in a **cover photo**, type the
-**title** and a short **summary** (both shown on the card), write the **full
-story** in the editor (headings, bold, lists, quotes, links), add **more
-photos** for the gallery, and attach a **PDF** — a citation, certificate, press
-release or scanned clipping — that visitors can download. Photos and PDFs are
-uploaded right there in the form; there is no need to visit the library first.
+Each update has its own page on the website and a card on the **News & Awards**
+page (`/news`). Visitors can filter the page by kind.
 
-On the page, visitors can click any photo to see it full size and step through
-the gallery, download the PDF, and copy a link to share.
+Fill in the **cover photo**, a **headline** and a short **summary** (both shown
+on the card), then the **full story** in the editor (headings, bold, lists,
+quotes, links), **more photos** for the gallery, and a **PDF** such as a
+certificate, programme, press release or scanned clipping. The side panel asks
+only what fits the kind: *Awarded to* for an award, *Hosted by* for a lecture,
+*Publication* for press. Photos and PDFs are uploaded right there in the form,
+by dropping them in or choosing a file. You can also pick something already in
+the Library, but you never have to leave the page to upload.
 
-Each **award** says who received it — **Prof. Adeyanju** or **Galaxy
-Backbone**. Both kinds sit in one feed on the Recognition page; once both
-exist, filter buttons let visitors show one or the other. Each award can also
-record when it was presented and by whom.
+On the page, visitors can click any photo to see it full size, download the
+PDF, and copy a link to share. Photos are shown whole, as they were uploaded,
+with nothing behind them.
 
-New stories go to the **top** of their list, so the newest leads. The ▲ ▼
-buttons change the order.
+**Latest on the home page.** The newest updates appear in a *Latest news &
+awards* strip just under the top of the home page, each marked **New** for two
+weeks after it is posted. The switch *Show in "Latest" on the home page* (on by
+default) controls which updates can appear there.
 
-An entry's page address is made from its title when it is first saved and does
-not change afterwards, so links that have been shared keep working even if the
-title is edited.
+New updates go to the **top** of the list. The ▲ ▼ buttons change the order.
+
+An update's page address is made from its headline when it is first saved and
+does not change afterwards, so links that have been shared keep working even if
+the headline is edited. Links to the old Recognition page and to the old award
+and press pages redirect to News & Awards.
 
 ### Everything else
 
 | Group | Section | Appears on |
 |---|---|---|
-| Highlights | Impact numbers | `/impact` |
-| Highlights | Headline numbers | home |
-| Highlights | Scrolling keywords | home |
-| Profile | Career journey | `/journey` |
-| Profile | Research areas | `/research`, home |
-| Profile | Education | `/about` |
-| Profile | Personal honours | `/recognition` |
-| Profile | At a glance | `/about` |
-| Page images | Page images | home, `/impact`, `/research` |
+| Impact page | Initiatives | `/impact`, home (each has its own page) |
+| Impact page | Impact numbers | `/impact` |
+| About & profile | Career journey | `/journey` |
+| About & profile | Research areas | `/research`, home |
+| About & profile | Education | `/about` |
+| About & profile | Personal honours | `/about` |
+| About & profile | At a glance | `/about` |
+| Home page | Home page numbers | home |
+| Home page | Keywords | home |
+| Photos | Photos on pages | home, `/impact`, `/research` |
 
 Plus the **Library** of every uploaded photo and PDF, and **Team**
 (administrators only).
 
-**Page images** is a fixed list — the photographs built into the page designs
-(the hero portrait, the team photograph, and so on). The team chooses which
-uploaded image fills each place, but cannot add or remove slots, because the
-layouts define them. Leaving a slot empty falls back to the photograph the site
-originally shipped with, so a page can never end up with a hole in it.
+**Photos on pages** is a fixed list: the photographs built into the page
+designs (the main portrait, the team photograph, and so on). The team chooses
+which uploaded photo fills each place, but cannot add or remove places, because
+the layouts define them. Leaving a place empty falls back to the photograph the
+site originally shipped with, so a page can never end up with a hole in it.
 
 Every entry can be reordered (▲ ▼), hidden from the public site without being
 deleted (the eye icon), edited, or removed.
 
 Most sections also have an optional **Description**. For education and
-personal honours it appears on the website beneath the entry; for the headline
-numbers, impact numbers, at-a-glance rows and scrolling keywords the design
-has nowhere to show it, so it serves as a note for the team. The field's help
-text says which is which.
+personal honours it appears on the website beneath the entry; for the home page
+numbers, impact numbers, at-a-glance rows and keywords the design has nowhere
+to show it, so it serves as a note for the team. The field's help text says
+which is which.
 
 ### Roles
 
@@ -141,9 +150,10 @@ deploy that stops using them.
 
 | File | What it is |
 |---|---|
-| `db/migrations/0000_initial_cms_schema.sql` | Creates all 15 tables. |
+| `db/migrations/0000_initial_cms_schema.sql` | Creates the first 15 tables. |
 | `db/migrations/0001_add_description_fields.sql` | Adds the optional Description column. |
 | `db/migrations/0002_articles.sql` | Turns awards, press and initiatives into articles: page addresses (filled in for existing rows), story, gallery, PDF, award recipient and dates. |
+| `db/migrations/0003_news.sql` | Adds News & Awards. Copies every award and press item into it, keeping their page addresses, photos, galleries and PDFs. The old `awards` and `press_items` tables are left in place for one deploy and can be dropped in a later one. |
 | `db/content-snapshot.sql` | Every content row as of the first launch, plus its images. |
 
 `content-snapshot.sql` deliberately excludes `users` and `sessions`, so no

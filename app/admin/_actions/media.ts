@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
-import { awards, initiatives, media, pressItems } from "@/db/schema";
+import { initiatives, media, newsItems } from "@/db/schema";
 import { requireUser } from "@/lib/auth/session";
 import { imageSize } from "@/lib/cms/image-size";
 import { optimizeImage } from "@/lib/cms/optimize";
@@ -154,7 +154,7 @@ export async function updateMediaAlt(id: string, formData: FormData) {
 export async function deleteMedia(id: string) {
   await requireUser();
   await db.transaction(async (tx) => {
-    for (const table of [awards, pressItems, initiatives]) {
+    for (const table of [newsItems, initiatives]) {
       await tx
         .update(table)
         .set({ galleryIds: sql`array_remove(${table.galleryIds}, ${id}::uuid)` })

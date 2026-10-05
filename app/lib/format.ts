@@ -12,3 +12,14 @@ export function formatDate(value: string | null | undefined) {
 }
 
 export { formatBytes } from "@/lib/cms/media-types";
+
+/** "20+", "1,200" — a figure with its suffix, for the numbers on the site. */
+export function formatCount(value: number, suffix = "") {
+  return `${value.toLocaleString("en-US")}${suffix}`;
+}
+
+/** Who an award was given to, as visitors read it. */
+export const RECIPIENT_NAME = {
+  personal: "Prof. Adeyanju",
+  gbb: "Galaxy Backbone",
+} as const;

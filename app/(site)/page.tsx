@@ -2,85 +2,56 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { AwardCard, PressCard } from "@/app/components/cards";
-import Counter from "@/app/components/Counter";
-import Reveal from "@/app/components/Reveal";
-import { Accent, Kicker, SectionHeading } from "@/app/components/ui";
-import { getAwardCards, getInitiativeCards, getPressCards } from "@/app/lib/articles";
+import { NewsCard } from "@/app/components/cards";
+import { Kicker, SectionHeading } from "@/app/components/ui";
+import { getInitiativeCards } from "@/app/lib/articles";
 import {
   getMarquee,
   getResearchAreas,
   getSiteImages,
   getStats,
 } from "@/app/lib/content";
+import { formatCount } from "@/app/lib/format";
 import { resolveIcon } from "@/app/lib/icons";
-
-const explore = [
-  { href: "/about", title: "About", desc: "The scholar leading Nigeria's federal digital infrastructure." },
-  { href: "/journey", title: "Journey", desc: "From a First Class at LAUTECH to MD/CEO — six chapters." },
-  { href: "/impact", title: "Impact", desc: "1Government Cloud, GovMail, Project 774 and more." },
-  { href: "/research", title: "Research", desc: "AI, machine learning and African language technology." },
-  { href: "/recognition", title: "Recognition", desc: "Awards, honours and national press coverage." },
-];
+import { getLatestNews } from "@/app/lib/news";
 
 /* Rendered statically and refreshed on demand: publishing in the CMS calls
    revalidatePath("/"), so edits appear without a redeploy. */
 export const revalidate = 300;
 
 export default async function Home() {
-  const [stats, marquee, initiatives, research, press, awards, images] = await Promise.all([
+  const [stats, keywords, initiatives, research, latest, images] = await Promise.all([
     getStats(),
     getMarquee(),
     getInitiativeCards(),
     getResearchAreas(),
-    getPressCards(),
-    getAwardCards(),
+    getLatestNews(3),
     getSiteImages(),
   ]);
 
   const hero = images["hero-portrait"];
   const profile = images["profile-portrait"];
   const team = images["team-photo"];
-  const [leadAward, ...moreAwards] = awards;
 
   return (
     <>
       {/* ============================ HERO ============================ */}
-      <section className="relative overflow-hidden">
-        <div className="dotgrid absolute inset-0" aria-hidden="true" />
-        <div
-          className="animate-glow absolute inset-x-0 top-0 h-[40rem] bg-[radial-gradient(ellipse_at_top_right,rgba(29,78,216,0.12),transparent_60%)]"
-          aria-hidden="true"
-        />
-
-        <div className="relative mx-auto max-w-6xl px-6 pt-36 pb-24 md:pt-40 grid md:grid-cols-[1.15fr_0.85fr] gap-14 items-center">
+      <section className="border-b bg-card">
+        <div className="mx-auto max-w-6xl px-6 py-14 md:py-20 grid md:grid-cols-[1.15fr_0.85fr] gap-12 items-center">
           <div>
-            <div className="animate-fade-up">
-              <Kicker>Professor · Engineer · MD/CEO, Galaxy Backbone</Kicker>
-            </div>
-            <h1
-              className="animate-fade-up mt-6 text-[3.4rem] md:text-[5.6rem] font-medium tracking-[-0.03em] leading-[0.98]"
-              style={{ animationDelay: "120ms" }}
-            >
-              Prof. Ibrahim
-              <br />
-              Adepoju <Accent>Adeyanju</Accent>
+            <Kicker>Professor · Engineer · MD/CEO, Galaxy Backbone</Kicker>
+            <h1 className="mt-4 text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05]">
+              Prof. Ibrahim Adepoju Adeyanju
             </h1>
-            <p
-              className="animate-fade-up mt-8 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl"
-              style={{ animationDelay: "240ms" }}
-            >
+            <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
               Professor of Computer Engineering and AI researcher, leading the
               company that runs the Federal Government of Nigeria&apos;s
               digital infrastructure.
             </p>
-            <div
-              className="animate-fade-up mt-9 flex flex-wrap gap-3"
-              style={{ animationDelay: "360ms" }}
-            >
+            <div className="mt-8 flex flex-wrap gap-3">
               <Button
                 size="lg"
-                className="h-12 rounded-full px-7 text-sm font-bold"
+                className="h-11 rounded-lg px-6 text-sm font-bold"
                 nativeButton={false}
                 render={<Link href="/impact" />}
               >
@@ -90,97 +61,84 @@ export default async function Home() {
               <Button
                 size="lg"
                 variant="outline"
-                className="h-12 rounded-full px-7 text-sm font-bold bg-card"
+                className="h-11 rounded-lg px-6 text-sm font-bold bg-card"
                 nativeButton={false}
-                render={<Link href="/recognition" />}
+                render={<Link href="/news" />}
               >
-                Awards &amp; recognition
+                News &amp; awards
               </Button>
             </div>
-            <ul
-              className="animate-fade-up mt-10 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[0.72rem] uppercase tracking-[0.16em] text-muted-foreground"
-              style={{ animationDelay: "480ms" }}
-            >
-              {["PhD Computing, RGU Aberdeen", "MIT-ETT Fellow", "COREN Engineer"].map((chip) => (
-                <li key={chip} className="flex items-center gap-2">
-                  <span className="size-1.5 rotate-45 bg-gold" aria-hidden="true" />
-                  {chip}
-                </li>
-              ))}
-            </ul>
+            {keywords.length > 0 && (
+              <ul className="mt-8 flex flex-wrap gap-2">
+                {keywords.map((keyword) => (
+                  <li
+                    key={keyword}
+                    className="rounded-md border bg-background px-3 py-1 text-sm text-muted-foreground"
+                  >
+                    {keyword}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
-          <Reveal className="justify-self-center">
-            <div className="relative">
-              <div
-                className="animate-float absolute -inset-4 rounded-[2.5rem] bg-secondary"
-                aria-hidden="true"
-              />
-              <div className="relative rounded-[2rem] overflow-hidden border bg-card shadow-[0_30px_70px_rgba(16,24,40,0.16)]">
-                <Image
-                  src={hero.src}
-                  alt={hero.alt}
-                  width={hero.width}
-                  height={hero.height}
-                  priority
-                  sizes="(min-width: 768px) 416px, 100vw"
-                  className="w-full object-cover object-top"
-                />
-              </div>
-              <Link
-                href="/recognition"
-                className="group absolute -bottom-6 -left-8 flex items-center gap-4 rounded-2xl border bg-card px-5 py-4 shadow-lg hover:border-gold/60 transition-colors"
-              >
-                <span>
-                  <span className="block font-heading text-3xl font-medium text-gold-ink">
-                    <Counter to={20} suffix="+" />
-                  </span>
-                  <span className="block text-xs font-semibold text-muted-foreground mt-0.5">
-                    awards in two years at GBB
-                  </span>
-                </span>
-                <ArrowUpRight
-                  className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-gold-ink"
-                  aria-hidden="true"
-                />
-              </Link>
-            </div>
-          </Reveal>
-        </div>
-
-        {/* Marquee */}
-        <div aria-hidden="true" className="relative py-5 border-y bg-card overflow-hidden">
-          <div className="marquee-track flex w-max items-center">
-            {[0, 1].map((copy) => (
-              <div key={copy} className="flex items-center shrink-0">
-                {marquee.map((item) => (
-                  <span key={item} className="flex items-center">
-                    <span className="font-heading text-lg italic text-muted-foreground whitespace-nowrap px-8">
-                      {item}
-                    </span>
-                    <span className="size-1.5 rotate-45 bg-gold/70 shrink-0" />
-                  </span>
-                ))}
-              </div>
-            ))}
+          <div className="justify-self-center">
+            <Image
+              src={hero.src}
+              alt={hero.alt}
+              width={hero.width}
+              height={hero.height}
+              priority
+              sizes="(min-width: 768px) 416px, 100vw"
+              className="w-full max-w-md rounded-xl h-auto"
+            />
           </div>
         </div>
       </section>
 
+      {/* ============================ LATEST ============================ */}
+      {latest.length > 0 && (
+        <section className="border-b py-14" aria-labelledby="latest">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <Kicker className="mb-1">What&apos;s new</Kicker>
+                <h2 id="latest" className="text-3xl font-semibold tracking-tight">
+                  Latest news &amp; awards
+                </h2>
+              </div>
+              <Button
+                variant="outline"
+                className="h-10 rounded-lg px-5 text-sm font-bold bg-card"
+                nativeButton={false}
+                render={<Link href="/news" />}
+              >
+                All news &amp; awards
+                <ArrowRight data-icon="inline-end" />
+              </Button>
+            </div>
+
+            <ul className="mt-8 grid items-start gap-6 md:grid-cols-3">
+              {latest.map((item) => (
+                <li key={item.id}>
+                  <NewsCard item={item} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
       {/* ============================ STATS BAND ============================ */}
-      <section className="relative bg-ink text-white overflow-hidden">
-        <div
-          className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(29,78,216,0.3),transparent_55%)]"
-          aria-hidden="true"
-        />
-        <div className="relative mx-auto max-w-6xl px-6 py-20">
-          <Reveal>
-            <dl className="grid grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-12">
+      {stats.length > 0 && (
+        <section className="bg-ink text-white">
+          <div className="mx-auto max-w-6xl px-6 py-16">
+            <dl className="grid grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-10">
               {stats.map((s) => (
-                <div key={s.id} className="border-t border-white/20 pt-6">
+                <div key={s.id} className="border-t border-white/20 pt-5">
                   <dt className="sr-only">{s.label}</dt>
-                  <dd className="font-heading text-5xl md:text-6xl font-medium tracking-tight">
-                    <Counter to={s.value} suffix={s.suffix} />
+                  <dd className="text-4xl md:text-5xl font-semibold tracking-tight">
+                    {formatCount(s.value, s.suffix)}
                   </dd>
                   <p className="mt-3 text-sm text-white/70 leading-snug max-w-[16rem]">
                     {s.label}
@@ -188,330 +146,151 @@ export default async function Home() {
                 </div>
               ))}
             </dl>
-          </Reveal>
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       {/* ============================ PROFILE ============================ */}
-      <section className="relative py-24">
-        <div className="mx-auto max-w-6xl px-6 grid md:grid-cols-[1.1fr_0.9fr] gap-16 items-center">
-          <Reveal>
-            <SectionHeading
-              kicker="Profile"
-              title={
-                <>
-                  A scholar at the helm of <Accent>national infrastructure</Accent>
-                </>
-              }
-            />
-            <div className="mt-8 flex flex-col gap-5 text-muted-foreground leading-relaxed text-lg max-w-xl">
+      <section className="py-16">
+        <div className="mx-auto max-w-6xl px-6 grid md:grid-cols-[1.1fr_0.9fr] gap-14 items-center">
+          <div>
+            <SectionHeading title="About Prof. Adeyanju" />
+            <div className="mt-6 flex flex-col gap-5 text-muted-foreground leading-relaxed text-lg max-w-xl">
               <p>
-                Before Abuja, there was Aberdeen — and before that, Ogbomoso.
                 Prof. Adeyanju graduated top of his class at LAUTECH, earned a
-                PhD in Computing at Robert Gordon University, and taught at
-                MIT as an Empowering the Teachers fellow before rising to
-                Professor of Intelligent Systems at Federal University
-                Oye-Ekiti.
+                PhD in Computing at Robert Gordon University, Aberdeen, and
+                taught at MIT as an Empowering the Teachers fellow before
+                becoming Professor of Intelligent Systems at Federal
+                University Oye-Ekiti.
               </p>
               <p>
-                Today he applies that same rigour to Galaxy Backbone Limited —
-                the company entrusted with Nigeria&apos;s sovereign cloud,
-                national fibre backbone and the digital services used across
-                the entire federal government.
+                Today he leads Galaxy Backbone Limited, the company entrusted
+                with Nigeria&apos;s sovereign cloud, national fibre backbone
+                and the digital services used across the federal government.
               </p>
             </div>
-            <blockquote className="mt-9 border-l-[3px] border-gold pl-6 py-1">
-              <p className="text-2xl italic leading-snug text-foreground">
-                &ldquo;The quiet architecture of Nigeria&apos;s digital
-                future.&rdquo;
-              </p>
-              <cite className="mt-3 block font-mono text-[0.72rem] uppercase tracking-[0.16em] text-muted-foreground not-italic">
-                BusinessDay, on Galaxy Backbone at 20
-              </cite>
-            </blockquote>
             <Button
               size="lg"
               variant="outline"
-              className="mt-9 h-12 rounded-full px-7 text-sm font-bold bg-card"
+              className="mt-8 h-11 rounded-lg px-6 text-sm font-bold bg-card"
               nativeButton={false}
               render={<Link href="/about" />}
             >
               More about him
               <ArrowRight data-icon="inline-end" />
             </Button>
-          </Reveal>
+          </div>
 
-          <Reveal delay={150} className="justify-self-center">
-            <figure className="relative max-w-xs">
-              <div
-                className="absolute -inset-3 rounded-[2rem] border-2 border-dashed border-primary/25 -rotate-2"
-                aria-hidden="true"
-              />
-              <Image
-                src={profile.src}
-                alt={profile.alt}
-                width={profile.width}
-                height={profile.height}
-                sizes="(min-width: 768px) 300px, 80vw"
-                className="relative rounded-[1.6rem] w-full object-cover shadow-[0_25px_50px_rgba(16,24,40,0.15)]"
-              />
-              <figcaption className="mt-5 text-center font-mono text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground">
-                {profile.caption ?? "MIT Empowering the Teachers fellow — Cambridge, 2014"}
+          <figure className="justify-self-center max-w-xs">
+            <Image
+              src={profile.src}
+              alt={profile.alt}
+              width={profile.width}
+              height={profile.height}
+              sizes="(min-width: 768px) 300px, 80vw"
+              className="w-full h-auto rounded-xl"
+            />
+            {profile.caption && (
+              <figcaption className="mt-3 text-sm text-muted-foreground">
+                {profile.caption}
               </figcaption>
-            </figure>
-          </Reveal>
+            )}
+          </figure>
         </div>
       </section>
 
-      {/* ============================ RECOGNITION ============================ */}
-      {leadAward && (
-        <section className="relative py-24 bg-card border-y overflow-hidden">
-          <div
-            className="absolute inset-x-0 top-0 h-96 bg-[radial-gradient(ellipse_at_top_left,rgba(195,154,62,0.10),transparent_60%)]"
-            aria-hidden="true"
-          />
-          <div className="relative mx-auto max-w-6xl px-6">
-            <Reveal>
-              <div className="flex flex-wrap items-end justify-between gap-6">
-                <SectionHeading
-                  kicker="Recognition"
-                  title={
-                    <>
-                      The latest <Accent>honours</Accent>
-                    </>
-                  }
-                />
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="h-12 rounded-full px-6 text-sm font-bold bg-card"
-                  nativeButton={false}
-                  render={<Link href="/recognition" />}
-                >
-                  All awards
-                  <ArrowRight data-icon="inline-end" />
-                </Button>
-              </div>
-            </Reveal>
-
-            <div className="mt-12 grid gap-6 lg:grid-cols-3">
-              <Reveal className="lg:col-span-2 h-full">
-                <AwardCard award={leadAward} featured />
-              </Reveal>
-              {moreAwards.slice(0, 1).map((award) => (
-                <Reveal key={award.id} delay={120} className="h-full">
-                  <AwardCard award={award} />
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* ============================ LEADERSHIP ============================ */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="relative mx-auto max-w-6xl px-6">
-          <Reveal>
-            <SectionHeading
-              kicker="Leadership at GBB"
-              title={
-                <>
-                  Two years of <Accent>purposeful delivery</Accent>
-                </>
-              }
-              intro="Since February 2024, the Integrated Digital Transformation Strategy has repositioned Galaxy Backbone as one of Nigeria's most strategic digital institutions."
-            />
-          </Reveal>
+      <section className="py-16 border-t bg-card">
+        <div className="mx-auto max-w-6xl px-6">
+          <SectionHeading
+            title="Leadership at Galaxy Backbone"
+            intro="Since February 2024, the Integrated Digital Transformation Strategy has guided how Galaxy Backbone serves the Federal Government."
+          />
 
-          <div className="mt-14 grid md:grid-cols-2 gap-14 items-center">
-            <Reveal>
-              <figure className="relative rounded-[2rem] overflow-hidden border shadow-[0_25px_60px_rgba(16,24,40,0.14)]">
-                <Image
-                  src={team.src}
-                  alt={team.alt}
-                  width={team.width}
-                  height={team.height}
-                  sizes="(min-width: 768px) 50vw, 100vw"
-                  className="w-full object-cover"
-                />
-                <div
-                  className="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-transparent"
-                  aria-hidden="true"
-                />
-                <figcaption className="absolute bottom-5 left-6 right-6 text-sm font-semibold text-white">
-                  {team.caption ?? "With Galaxy Backbone's executive management team, Abuja."}
-                </figcaption>
-              </figure>
-            </Reveal>
+          <div className="mt-10 grid md:grid-cols-2 gap-12 items-center">
+            <figure>
+              <Image
+                src={team.src}
+                alt={team.alt}
+                width={team.width}
+                height={team.height}
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="w-full h-auto rounded-xl"
+              />
+              <figcaption className="mt-3 text-sm text-muted-foreground">
+                {team.caption ?? "With Galaxy Backbone's executive management team, Abuja."}
+              </figcaption>
+            </figure>
 
             <div>
               <ul className="divide-y border-y">
-                {initiatives.slice(0, 4).map((item, i) => {
+                {initiatives.slice(0, 4).map((item) => {
                   const Icon = resolveIcon(item.icon);
                   return (
                     <li key={item.id}>
-                      <Reveal delay={i * 80}>
-                        <Link
-                          href={item.href}
-                          className="group flex gap-5 py-6 pr-2"
-                        >
-                          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-secondary text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                            <Icon className="size-5" aria-hidden="true" />
+                      <Link href={item.href} className="group flex gap-4 py-5 pr-2">
+                        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
+                          <Icon className="size-5" aria-hidden="true" />
+                        </span>
+                        <span className="grow">
+                          <span className="block text-lg font-semibold group-hover:text-primary transition-colors">
+                            {item.title}
                           </span>
-                          <span className="grow">
-                            <span className="block font-heading text-xl font-medium group-hover:text-primary transition-colors duration-200">
-                              {item.title}
-                            </span>
-                            <span className="mt-1.5 block text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                              {item.summary}
-                            </span>
+                          <span className="mt-1 block text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                            {item.summary}
                           </span>
-                          <ArrowRight
-                            className="mt-1.5 size-4 shrink-0 text-muted-foreground transition-all duration-200 group-hover:text-primary group-hover:translate-x-1"
-                            aria-hidden="true"
-                          />
-                        </Link>
-                      </Reveal>
+                        </span>
+                        <ArrowRight
+                          className="mt-1.5 size-4 shrink-0 text-muted-foreground group-hover:text-primary"
+                          aria-hidden="true"
+                        />
+                      </Link>
                     </li>
                   );
                 })}
               </ul>
-              <Reveal delay={320}>
-                <Button
-                  size="lg"
-                  className="mt-8 h-12 rounded-full px-7 text-sm font-bold"
-                  nativeButton={false}
-                  render={<Link href="/impact#initiatives" />}
-                >
-                  See every initiative
-                  <ArrowRight data-icon="inline-end" />
-                </Button>
-              </Reveal>
+              <Button
+                size="lg"
+                className="mt-6 h-11 rounded-lg px-6 text-sm font-bold"
+                nativeButton={false}
+                render={<Link href="/impact#initiatives" />}
+              >
+                See every initiative
+                <ArrowRight data-icon="inline-end" />
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
       {/* ============================ RESEARCH ============================ */}
-      <section className="relative py-24 bg-card border-y">
+      <section className="py-16 border-t">
         <div className="mx-auto max-w-6xl px-6">
-          <Reveal>
-            <div className="flex flex-wrap items-end justify-between gap-6">
-              <SectionHeading
-                kicker="Research & Academia"
-                title={
-                  <>
-                    <Accent>970+ citations</Accent>, two decades of enquiry
-                  </>
-                }
-              />
-              <Button
-                size="lg"
-                variant="outline"
-                className="h-12 rounded-full px-6 text-sm font-bold bg-card"
-                nativeButton={false}
-                render={
-                  <a
-                    href="https://scholar.google.com/citations?user=Z97RmFAAAAAJ"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  />
-                }
-              >
-                Google Scholar
-                <ArrowUpRight data-icon="inline-end" />
-              </Button>
-            </div>
-          </Reveal>
-
-          <div className="mt-12 grid sm:grid-cols-2 gap-x-14">
-            {research.map((r, i) => (
-              <Reveal key={r.id} delay={(i % 2) * 100}>
-                <div className="border-t py-7">
-                  <h3 className="text-2xl font-medium">{r.area}</h3>
-                  <p className="mt-2 text-muted-foreground leading-relaxed">
-                    {r.detail}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============================ PRESS ============================ */}
-      {press.length > 0 && (
-        <section className="relative py-24">
-          <div className="mx-auto max-w-6xl px-6">
-            <Reveal>
-              <div className="flex flex-wrap items-end justify-between gap-6">
-                <SectionHeading
-                  kicker="In the Press"
-                  title={
-                    <>
-                      What the papers <Accent>say</Accent>
-                    </>
-                  }
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <SectionHeading title={`Research: ${formatCount(970, "+")} citations`} />
+            <Button
+              variant="outline"
+              className="h-10 rounded-lg px-5 text-sm font-bold bg-card"
+              nativeButton={false}
+              render={
+                <a
+                  href="https://scholar.google.com/citations?user=Z97RmFAAAAAJ"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 />
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="h-12 rounded-full px-6 text-sm font-bold bg-card"
-                  nativeButton={false}
-                  render={<Link href="/recognition#press" />}
-                >
-                  All coverage
-                  <ArrowRight data-icon="inline-end" />
-                </Button>
-              </div>
-            </Reveal>
-
-            <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {press.slice(0, 3).map((item, i) => (
-                <li key={item.id}>
-                  <Reveal delay={i * 80} className="h-full">
-                    <PressCard item={item} />
-                  </Reveal>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
-
-      {/* ============================ EXPLORE INDEX ============================ */}
-      <section className="relative py-24 pb-32 bg-card border-t">
-        <div className="mx-auto max-w-6xl px-6">
-          <Reveal>
-            <SectionHeading
-              kicker="Explore"
-              title={
-                <>
-                  Get to know <Accent>the Professor</Accent>
-                </>
               }
-            />
-          </Reveal>
+            >
+              Google Scholar
+              <ArrowUpRight data-icon="inline-end" />
+            </Button>
+          </div>
 
-          <div className="mt-12 border-t">
-            {explore.map((e, i) => (
-              <Reveal key={e.href} delay={i * 50}>
-                <Link
-                  href={e.href}
-                  className="group flex items-center gap-6 md:gap-10 border-b py-7 px-2 transition-colors duration-200 hover:bg-accent/60"
-                >
-                  <div className="grow">
-                    <h3 className="text-3xl md:text-4xl font-medium tracking-tight group-hover:text-primary transition-colors duration-200">
-                      {e.title}
-                    </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">{e.desc}</p>
-                  </div>
-                  <ArrowRight
-                    className="size-6 shrink-0 text-muted-foreground transition-all duration-200 group-hover:text-primary group-hover:translate-x-2"
-                    aria-hidden="true"
-                  />
-                </Link>
-              </Reveal>
+          <div className="mt-10 grid sm:grid-cols-2 gap-x-14">
+            {research.map((r) => (
+              <div key={r.id} className="border-t py-6">
+                <h3 className="text-xl font-semibold">{r.area}</h3>
+                <p className="mt-2 text-muted-foreground leading-relaxed">{r.detail}</p>
+              </div>
             ))}
           </div>
         </div>

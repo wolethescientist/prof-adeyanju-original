@@ -10,6 +10,16 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "4.5mb",
     },
   },
+  /* News & Awards replaced the separate Recognition page, and awards and press
+     coverage became news items (migration 0003 kept their addresses), so links
+     people have already shared keep working. */
+  async redirects() {
+    return [
+      { source: "/recognition", destination: "/news", permanent: true },
+      { source: "/recognition/awards/:slug", destination: "/news/:slug", permanent: true },
+      { source: "/recognition/press/:slug", destination: "/news/:slug", permanent: true },
+    ];
+  },
   images: {
     /* Once localPatterns is set, only these local paths may be optimised.
        `search: ""` forbids query strings entirely — the cache-busting checksum

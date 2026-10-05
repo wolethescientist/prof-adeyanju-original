@@ -389,48 +389,46 @@ async function main() {
     ].map((text) => ({ text }))
   );
 
-  await seedTable("awards", schema.awards, withSlugs("award", [
-    { award: "NET5.5G Pioneer Award", year: "2025" },
-    { award: "Inaugural Artificial Intelligence Award", year: "2025" },
-    {
-      award:
-        "Best IT Service Provider Company of the Year — International Standard Excellence Awards",
+  /* Awards, then press coverage, in one News & Awards list. */
+  await seedTable("news & awards", schema.newsItems, withSlugs("title", [
+    ...[
+      "NET5.5G Pioneer Award",
+      "Inaugural Artificial Intelligence Award",
+      "Best IT Service Provider Company of the Year — International Standard Excellence Awards",
+      "1st Overall, Federal Government Website Performance Scorecard",
+      "BPSR Website Performance Award",
+      "Nigeria @ 65 Independence Kitty — Overall Winner",
+    ].map((title) => ({
+      title,
+      category: "award" as const,
+      recipient: "gbb" as const,
       year: "2025",
-    },
+    })),
     {
-      award: "1st Overall, Federal Government Website Performance Scorecard",
-      year: "2025",
-    },
-    { award: "BPSR Website Performance Award", year: "2025" },
-    { award: "Nigeria @ 65 Independence Kitty — Overall Winner", year: "2025" },
-  ]));
-
-  await seedTable("press", schema.pressItems, withSlugs("title", [
-    {
-      outlet: "BusinessDay",
+      source: "BusinessDay",
       title:
         "Galaxy Backbone at 20: The Quiet Architecture of Nigeria's Digital Future",
       href: "https://businessday.ng/top-stories/article/galaxy-backbone-at-20-the-quiet-architecture-of-nigerias-digital-future/",
     },
     {
-      outlet: "TechEconomy",
+      source: "TechEconomy",
       title:
         "Inside Galaxy Backbone: Two Years of Purposeful Leadership Under Ibrahim Adeyanju",
       href: "https://techeconomy.ng/two-years-of-purposeful-leadership-under-ibrahim-adeyanju/",
     },
     {
-      outlet: "Vanguard",
+      source: "Vanguard",
       title:
         "Galaxy Backbone to unlock digital economy opportunities across Nigeria — Adeyanju",
       href: "https://www.vanguardngr.com/2026/06/galaxy-backbone-to-unlock-digital-economy-opportunities-across-nigeria-adeyanju/",
     },
     {
-      outlet: "TechAfrica News",
+      source: "TechAfrica News",
       title:
         "Two-Year Review: Galaxy Backbone Advances Cloud, Cybersecurity and Public Sector Digital Services",
       href: "https://techafricanews.com/2026/02/25/two-year-review-galaxy-backbone-advances-cloud-cybersecurity-and-public-sector-digital-services/",
     },
-  ]));
+  ].map((row) => ({ category: "press" as const, ...row }))));
 
   await seedTable("at a glance", schema.glanceItems, [
     {

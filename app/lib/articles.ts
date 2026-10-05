@@ -2,14 +2,14 @@ import "server-only";
 
 import { and, asc, eq, inArray, like } from "drizzle-orm";
 import { db } from "@/db";
-import { awards, initiatives, media, pressItems, type AwardRecipient } from "@/db/schema";
+import { initiatives, media } from "@/db/schema";
 import { mediaUrl } from "@/lib/cms/media-url";
 import { cleanRichText, hasText, plainText } from "@/lib/cms/rich-text";
 
 /**
- * Read side of the three article sections — awards, press coverage and
- * initiatives — for the public pages: the cards that list them and the page
- * each one opens.
+ * Read side of the article sections, for the public pages: the cards that
+ * list them and the page each one opens. Initiatives are here; news (awards,
+ * invitations, press) is in ./news.ts and shares the helpers below.
  *
  * Only published entries are ever returned, in the order the team set. The
  * pages are statically rendered and refreshed when the CMS saves, so none of
@@ -30,13 +30,13 @@ export type Attachment = {
   byteSize: number;
 };
 
-type Cover = { id: string; checksum: string; alt: string; width: number | null; height: number | null } | null;
+export type Cover = { id: string; checksum: string; alt: string; width: number | null; height: number | null } | null;
 
-const coverColumns = {
+export const coverColumns = {
   columns: { id: true, checksum: true, alt: true, width: true, height: true },
 } as const;
 
-function picture(image: Cover, fallbackAlt: string): Picture | null {
+export function picture(image: Cover, fallbackAlt: string): Picture | null {
   if (!image) return null;
   return {
     id: image.id,
@@ -48,7 +48,7 @@ function picture(image: Cover, fallbackAlt: string): Picture | null {
 }
 
 /** Gallery ids → pictures, in the editor's order, skipping deleted ones. */
-async function gallery(ids: string[], fallbackAlt: string): Promise<Picture[]> {
+export async function gallery(ids: string[], fallbackAlt: string): Promise<Picture[]> {
   if (ids.length === 0) return [];
   const rows = await db
     .select({
@@ -66,7 +66,7 @@ async function gallery(ids: string[], fallbackAlt: string): Promise<Picture[]> {
     .filter((item): item is Picture => item !== null);
 }
 
-async function attachment(id: string | null): Promise<Attachment | null> {
+export async function attachment(id: string | null): Promise<Attachment | null> {
   if (!id) return null;
   const [row] = await db
     .select({
@@ -82,7 +82,7 @@ async function attachment(id: string | null): Promise<Attachment | null> {
 }
 
 /** The story as safe HTML, or null when nothing has been written yet. */
-function story(body: string | null) {
+export function story(body: string | null) {
   const html = cleanRichText(body);
   return hasText(html) ? html : null;
 }
@@ -91,139 +91,6 @@ function story(body: string | null) {
 export function describe(summary: string | null, body: string | null, max = 180) {
   const text = summary?.trim() || plainText(body);
   return text.length > max ? `${text.slice(0, max - 1).replace(/\s+\S*$/, "")}…` : text;
-}
-
-/* ------------------------------------------------------------------ awards */
-
-export const AWARD_PATH = "/recognition/awards";
-
-export type AwardCard = {
-  id: string;
-  slug: string;
-  href: string;
-  title: string;
-  year: string;
-  recipient: AwardRecipient;
-  awardedBy: string | null;
-  summary: string | null;
-  cover: Picture | null;
-};
-
-export type AwardArticle = AwardCard & {
-  awardedOn: string | null;
-  body: string | null;
-  gallery: Picture[];
-  attachment: Attachment | null;
-  updatedAt: Date;
-};
-
-export async function getAwardCards(): Promise<AwardCard[]> {
-  const rows = await db.query.awards.findMany({
-    where: eq(awards.published, true),
-    orderBy: asc(awards.position),
-    with: { image: coverColumns },
-  });
-  return rows.map((row) => ({
-    id: row.id,
-    slug: row.slug,
-    href: `${AWARD_PATH}/${row.slug}`,
-    title: row.award,
-    year: row.year,
-    recipient: row.recipient,
-    awardedBy: row.awardedBy,
-    summary: row.detail,
-    cover: picture(row.image, row.award),
-  }));
-}
-
-export async function getAward(slug: string): Promise<AwardArticle | null> {
-  const row = await db.query.awards.findFirst({
-    where: and(eq(awards.slug, slug), eq(awards.published, true)),
-    with: { image: coverColumns },
-  });
-  if (!row) return null;
-  return {
-    id: row.id,
-    slug: row.slug,
-    href: `${AWARD_PATH}/${row.slug}`,
-    title: row.award,
-    year: row.year,
-    recipient: row.recipient,
-    awardedBy: row.awardedBy,
-    awardedOn: row.awardedOn,
-    summary: row.detail,
-    cover: picture(row.image, row.award),
-    body: story(row.body),
-    gallery: await gallery(row.galleryIds, row.award),
-    attachment: await attachment(row.attachmentId),
-    updatedAt: row.updatedAt,
-  };
-}
-
-/* ------------------------------------------------------------------- press */
-
-export const PRESS_PATH = "/recognition/press";
-
-export type PressCard = {
-  id: string;
-  slug: string;
-  href: string;
-  title: string;
-  outlet: string;
-  publishedOn: string | null;
-  summary: string | null;
-  /** Link to the original coverage, when it is online. */
-  original: string | null;
-  cover: Picture | null;
-};
-
-export type PressArticle = PressCard & {
-  body: string | null;
-  gallery: Picture[];
-  attachment: Attachment | null;
-  updatedAt: Date;
-};
-
-export async function getPressCards(): Promise<PressCard[]> {
-  const rows = await db.query.pressItems.findMany({
-    where: eq(pressItems.published, true),
-    orderBy: asc(pressItems.position),
-    with: { image: coverColumns },
-  });
-  return rows.map((row) => ({
-    id: row.id,
-    slug: row.slug,
-    href: `${PRESS_PATH}/${row.slug}`,
-    title: row.title,
-    outlet: row.outlet,
-    publishedOn: row.publishedOn,
-    summary: row.description,
-    original: row.href,
-    cover: picture(row.image, row.title),
-  }));
-}
-
-export async function getPressArticle(slug: string): Promise<PressArticle | null> {
-  const row = await db.query.pressItems.findFirst({
-    where: and(eq(pressItems.slug, slug), eq(pressItems.published, true)),
-    with: { image: coverColumns },
-  });
-  if (!row) return null;
-  return {
-    id: row.id,
-    slug: row.slug,
-    href: `${PRESS_PATH}/${row.slug}`,
-    title: row.title,
-    outlet: row.outlet,
-    publishedOn: row.publishedOn,
-    summary: row.description,
-    original: row.href,
-    cover: picture(row.image, row.title),
-    body: story(row.body),
-    gallery: await gallery(row.galleryIds, row.title),
-    attachment: await attachment(row.attachmentId),
-    updatedAt: row.updatedAt,
-  };
 }
 
 /* ------------------------------------------------------------- initiatives */
