@@ -9,6 +9,7 @@ import { getNewsCards, getNewsItem } from "@/app/lib/news";
 import type { NewsCategory } from "@/db/schema";
 import { NEWS_CATEGORY_INFO } from "@/lib/cms/news";
 import { DEFAULT_SHARE_IMAGE } from "@/lib/seo";
+import { EVENT } from "@/lib/event";
 import { SITE_NAME } from "@/lib/site";
 import { articleSchema, breadcrumbSchema } from "@/lib/structured-data";
 
@@ -27,6 +28,15 @@ const LINK_LABEL: Record<NewsCategory, string> = {
   press: "Read the original article",
   announcement: "Visit the link",
 };
+
+/** True when a post links to this site's own registration page. */
+function isRegistrationLink(link: string) {
+  try {
+    return new URL(link, "https://placeholder.invalid").pathname.replace(/\/$/, "") === EVENT.path;
+  } catch {
+    return false;
+  }
+}
 
 export async function generateStaticParams() {
   return (await getNewsCards()).map((item) => ({ slug: item.slug }));
@@ -113,7 +123,13 @@ export default async function NewsItemPage({ params }: { params: Promise<{ slug:
       body={item.body}
       gallery={item.gallery}
       attachment={item.attachment}
-      external={item.link ? { href: item.link, label: LINK_LABEL[item.category] } : null}
+      external={
+        item.link
+          ? isRegistrationLink(item.link)
+            ? { href: EVENT.path, label: "Register to attend", internal: true }
+            : { href: item.link, label: LINK_LABEL[item.category] }
+          : null
+      }
       more={
         others.length > 0
           ? {

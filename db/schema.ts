@@ -16,6 +16,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -286,6 +287,29 @@ export const glanceItems = pgTable("glance_items", {
   value: text("value").notNull(),
   description: text("description"),
 });
+
+/* ----------------------------------------------------------- registrations */
+
+/**
+ * People who registered to attend an event (the /register page). The media
+ * team sees them in the site manager and can download them as a CSV.
+ *
+ * `event` is the event's key from lib/event.ts. An email address can register
+ * once per event, which is what the unique constraint enforces.
+ */
+export const eventRegistrations = pgTable(
+  "event_registrations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    event: text("event").notNull(),
+    name: text("name").notNull(),
+    phone: text("phone").notNull(),
+    /* Stored in lower case. */
+    email: text("email").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [unique("event_registrations_event_email_unique").on(table.event, table.email)]
+);
 
 /* --------------------------------------------------------------- relations */
 

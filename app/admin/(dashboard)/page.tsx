@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { desc, inArray } from "drizzle-orm";
-import { ArrowRight, FolderOpen, PenLine } from "lucide-react";
+import { count, desc, inArray } from "drizzle-orm";
+import { ArrowRight, ClipboardList, FolderOpen, PenLine } from "lucide-react";
 import { db } from "@/db";
-import { media } from "@/db/schema";
+import { eventRegistrations, media } from "@/db/schema";
 import { CONTENT_TYPES } from "@/lib/cms/registry";
 import { countEntries } from "@/lib/cms/entries";
 import { listMedia } from "@/lib/cms/media";
@@ -71,7 +71,7 @@ function ago(date: Date) {
 export default async function DashboardPage() {
   const user = await getCurrentUser();
 
-  const [counts, library, stories] = await Promise.all([
+  const [counts, library, stories, [{ registered }]] = await Promise.all([
     Promise.all(
       CONTENT_TYPES.map(async (type) => ({
         type,
@@ -80,6 +80,7 @@ export default async function DashboardPage() {
     ),
     listMedia(),
     recentStories(),
+    db.select({ registered: count() }).from(eventRegistrations),
   ]);
 
   const groups = [...new Set(CONTENT_TYPES.map((type) => type.group))];
@@ -240,28 +241,50 @@ export default async function DashboardPage() {
 
       <section className="flex flex-col gap-4">
         <h2 className="text-xs font-medium text-muted-foreground">
-          Library
+          Library and events
         </h2>
-        <Link
-          href="/admin/media"
-          className="group flex items-center gap-4 rounded-2xl border bg-card p-4 transition-colors duration-150 hover:border-primary/40 sm:max-w-sm"
-        >
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary">
-            <FolderOpen className="size-5" aria-hidden="true" />
-          </span>
-          <span className="grow">
-            <span className="block text-sm font-semibold group-hover:text-primary transition-colors">
-              Photos &amp; PDFs
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <Link
+            href="/admin/media"
+            className="group flex items-center gap-4 rounded-2xl border bg-card p-4 transition-colors duration-150 hover:border-primary/40"
+          >
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary">
+              <FolderOpen className="size-5" aria-hidden="true" />
             </span>
-            <span className="block text-xs text-muted-foreground">
-              {photos} {photos === 1 ? "photo" : "photos"} · {pdfs} {pdfs === 1 ? "PDF" : "PDFs"}
+            <span className="grow">
+              <span className="block text-sm font-semibold group-hover:text-primary transition-colors">
+                Photos &amp; PDFs
+              </span>
+              <span className="block text-xs text-muted-foreground">
+                {photos} {photos === 1 ? "photo" : "photos"} · {pdfs} {pdfs === 1 ? "PDF" : "PDFs"}
+              </span>
             </span>
-          </span>
-          <ArrowRight
-            className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
-            aria-hidden="true"
-          />
-        </Link>
+            <ArrowRight
+              className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+              aria-hidden="true"
+            />
+          </Link>
+          <Link
+            href="/admin/registrations"
+            className="group flex items-center gap-4 rounded-2xl border bg-card p-4 transition-colors duration-150 hover:border-primary/40"
+          >
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary">
+              <ClipboardList className="size-5" aria-hidden="true" />
+            </span>
+            <span className="grow">
+              <span className="block text-sm font-semibold group-hover:text-primary transition-colors">
+                Registrations
+              </span>
+              <span className="block text-xs text-muted-foreground">
+                {registered} {registered === 1 ? "person" : "people"} registered
+              </span>
+            </span>
+            <ArrowRight
+              className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+              aria-hidden="true"
+            />
+          </Link>
+        </div>
       </section>
     </div>
   );

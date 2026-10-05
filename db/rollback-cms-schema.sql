@@ -1,6 +1,6 @@
 -- Removes the CMS from a database it was applied to by mistake.
 --
--- Drops ONLY the 16 tables and the one enum this CMS created. Everything else
+-- Drops ONLY the 17 tables and the one enum this CMS created. Everything else
 -- in the database is left alone — verified against the target that no foreign
 -- key outside these tables points into them, so nothing cascades outward.
 --
@@ -14,6 +14,7 @@ BEGIN;
 DROP TABLE IF EXISTS "sessions";
 DROP TABLE IF EXISTS "awards";
 DROP TABLE IF EXISTS "news_items";
+DROP TABLE IF EXISTS "event_registrations";
 DROP TABLE IF EXISTS "initiatives";
 DROP TABLE IF EXISTS "press_items";
 DROP TABLE IF EXISTS "site_images";

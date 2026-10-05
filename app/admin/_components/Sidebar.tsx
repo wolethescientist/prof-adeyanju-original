@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
+  ClipboardList,
   ExternalLink,
   FolderOpen,
   LayoutDashboard,
@@ -65,6 +66,7 @@ export default function Sidebar({ user }: Props) {
       <div className="flex flex-col gap-0.5">
         {link("/admin", "Dashboard", LayoutDashboard)}
         {link("/admin/media", "Library", FolderOpen)}
+        {link("/admin/registrations", "Registrations", ClipboardList)}
       </div>
 
       {groups.map((group) => (

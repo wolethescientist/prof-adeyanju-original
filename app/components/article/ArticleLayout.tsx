@@ -1,4 +1,4 @@
-import { ArrowUpRight, ChevronRight, FileText } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ChevronRight, FileText } from "lucide-react";
 import Link from "next/link";
 import type { Attachment, Picture } from "@/app/lib/articles";
 import { formatBytes } from "@/app/lib/format";
@@ -46,7 +46,7 @@ export default function ArticleLayout({
   body: string | null;
   gallery: Picture[];
   attachment: Attachment | null;
-  external?: { href: string; label: string } | null;
+  external?: { href: string; label: string; internal?: boolean } | null;
   more?: { title: string; href: string; linkLabel: string; children: React.ReactNode } | null;
 }) {
   const pictures = [...(cover ? [cover] : []), ...gallery];
@@ -138,20 +138,32 @@ export default function ArticleLayout({
                   className="animate-fade-up mt-8 flex flex-wrap gap-3"
                   style={{ animationDelay: "400ms" }}
                 >
-                  {external && (
-                    <a
-                      href={external.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={cn(action, "group bg-primary text-primary-foreground hover:bg-primary/90")}
-                    >
-                      {external.label}
-                      <ArrowUpRight
-                        className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                        aria-hidden="true"
-                      />
-                    </a>
-                  )}
+                  {external &&
+                    (external.internal ? (
+                      <Link
+                        href={external.href}
+                        className={cn(action, "group bg-primary text-primary-foreground hover:bg-primary/90")}
+                      >
+                        {external.label}
+                        <ArrowRight
+                          className="size-4 transition-transform group-hover:translate-x-0.5"
+                          aria-hidden="true"
+                        />
+                      </Link>
+                    ) : (
+                      <a
+                        href={external.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(action, "group bg-primary text-primary-foreground hover:bg-primary/90")}
+                      >
+                        {external.label}
+                        <ArrowUpRight
+                          className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                          aria-hidden="true"
+                        />
+                      </a>
+                    ))}
                   {attachment && (
                     <a
                       href={attachment.src}

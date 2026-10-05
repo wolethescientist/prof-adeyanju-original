@@ -29,6 +29,13 @@
       "when": 1791201869047,
       "tag": "0003_news",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791215997219,
+      "tag": "0004_event_registrations",
+      "breakpoints": true
     }
   ]
 }

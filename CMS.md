@@ -126,6 +126,28 @@ most.
 
 ---
 
+## Event registration
+
+`/register` is a sign-up page for the Inaugural Lecture: visitors give their
+name, phone number and email. Registrations are saved in the site's own
+database. It closes by itself at the end of the day of the event, and one
+email address can register once.
+
+**Seeing who registered:** open **Registrations** in the site manager's side
+menu. It lists everyone, newest first, and **Download CSV** saves the list to
+open in Excel or Google Sheets (to put it in a Google Sheet: File → Import →
+Upload). A registration can be deleted there too, for a typo or a test.
+
+The event's name, date and venue are in `lib/event.ts`; change them there for
+the next event.
+
+**Linking to it from the announcement:** edit the lecture's post in News &
+Awards and set **Link to the event page** to
+`https://www.ibrahimadeyanju.com/register`. The post then shows a
+**Register to attend** button.
+
+---
+
 ## Running it locally
 
 ```bash
@@ -187,6 +209,7 @@ deploy that stops using them.
 | `db/migrations/0000_initial_cms_schema.sql` | Creates the first 15 tables. |
 | `db/migrations/0001_add_description_fields.sql` | Adds the optional Description column. |
 | `db/migrations/0002_articles.sql` | Turns awards, press and initiatives into articles: page addresses (filled in for existing rows), story, gallery, PDF, award recipient and dates. |
+| `db/migrations/0004_event_registrations.sql` | Adds the table that holds event registrations. |
 | `db/migrations/0003_news.sql` | Adds News & Awards. Copies every award and press item into it, keeping their page addresses, photos, galleries and PDFs. The old `awards` and `press_items` tables are left in place for one deploy and can be dropped in a later one. |
 | `db/content-snapshot.sql` | Every content row as of the first launch, plus its images. |
 

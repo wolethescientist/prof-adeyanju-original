@@ -18,7 +18,7 @@ const EXPECTED = [
   "users", "sessions", "media", "site_images",
   "stats", "impact_stats", "marquee_items", "timeline_entries",
   "initiatives", "research_areas", "education_entries", "honours",
-  "awards", "press_items", "news_items", "glance_items",
+  "awards", "press_items", "news_items", "event_registrations", "glance_items",
 ];
 
 async function main() {
@@ -58,7 +58,7 @@ async function main() {
       return;
     }
 
-    console.log("  all 16 CMS tables present ✓");
+    console.log("  all 17 CMS tables present ✓");
 
     console.log("\nContent");
     for (const table of ["news_items", "timeline_entries", "honours", "media", "site_images", "users"]) {

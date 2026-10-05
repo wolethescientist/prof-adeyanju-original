@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { initiatives, newsItems } from "@/db/schema";
+import { EVENT, registrationClosed } from "@/lib/event";
 import { absoluteUrl } from "@/lib/site";
 
 /* Saving in the CMS refreshes this (see `refresh` in the content actions), so
@@ -30,6 +31,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   return [
+    /* The registration page is listed while people can still register. */
+    ...(registrationClosed()
+      ? []
+      : [{ url: absoluteUrl(EVENT.path), changeFrequency: "weekly" as const, priority: 0.8 }]),
     ...PAGES.map((page) => ({
       url: absoluteUrl(page.path),
       changeFrequency: page.changeFrequency,
