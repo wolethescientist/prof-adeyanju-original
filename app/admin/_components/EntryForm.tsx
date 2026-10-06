@@ -142,7 +142,7 @@ function ChoiceField({
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className={cn("mb-2 font-semibold", kind ? "text-base" : "text-sm")}>{field.label}</legend>
-      <div className={cn("grid gap-2", kind ? "sm:grid-cols-2 lg:grid-cols-4" : "grid-cols-2")}>
+      <div className={cn("grid gap-2", kind ? (options.length > 4 ? "sm:grid-cols-2 lg:grid-cols-5" : "sm:grid-cols-2 lg:grid-cols-4") : "grid-cols-2")}>
         {options.map((option) => (
           <label
             key={option.value}

@@ -15,9 +15,14 @@ export const NEWS_CATEGORY_INFO: Record<
     help: "An award given to Prof. Adeyanju or to Galaxy Backbone.",
   },
   invitation: {
-    label: "Invitation or lecture",
-    filter: "Invitations & lectures",
-    help: "Invited, selected or appointed to speak, lecture or take part.",
+    label: "Invitation",
+    filter: "Invitations",
+    help: "Invited, selected or appointed to speak or take part in an event.",
+  },
+  lecture: {
+    label: "Inaugural Lecture",
+    filter: "Inaugural Lecture",
+    help: "The inaugural lecture: the announcement and news about it.",
   },
   press: {
     label: "In the press",

@@ -19,12 +19,14 @@ export const revalidate = 300;
 const SOURCE_LABEL: Record<NewsCategory, string> = {
   award: "Presented by",
   invitation: "Hosted by",
+  lecture: "Hosted by",
   press: "Publication",
   announcement: "Source",
 };
 const LINK_LABEL: Record<NewsCategory, string> = {
   award: "Visit the link",
   invitation: "Event page",
+  lecture: "Event page",
   press: "Read the original article",
   announcement: "Visit the link",
 };

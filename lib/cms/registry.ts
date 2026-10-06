@@ -165,7 +165,7 @@ export const CONTENT_TYPES: ContentType[] = [
     label: "News & Awards",
     singular: "Update",
     description:
-      "Everything you announce — an award, an invitation to give a lecture, coverage in the press. Each one gets its own page on the News & Awards page, and the newest appear on the home page.",
+      "Everything you announce — an award, an invitation, the inaugural lecture, coverage in the press. Each one gets its own page on the News & Awards page, and the newest appear on the home page.",
     icon: "Newspaper",
     group: "News & Awards",
     table: newsItems,
@@ -206,7 +206,8 @@ export const CONTENT_TYPES: ContentType[] = [
         placeholder: "What is the news?",
         placeholderWhen: {
           award: "Name of the award",
-          invitation: "e.g. Invited to deliver the inaugural lecture at…",
+          invitation: "e.g. Invited to speak at the annual summit",
+          lecture: "e.g. Inaugural Lecture of Prof. Ibrahim Adeyanju",
           press: "Headline of the article",
           announcement: "What is the news?",
         },
@@ -248,6 +249,7 @@ export const CONTENT_TYPES: ContentType[] = [
         labelWhen: {
           award: "Date presented",
           invitation: "Date of the event",
+          lecture: "Date of the lecture",
           press: "Date published",
           announcement: "Date",
         },
@@ -262,12 +264,14 @@ export const CONTENT_TYPES: ContentType[] = [
         labelWhen: {
           award: "Presented by",
           invitation: "Hosted by",
+          lecture: "Hosted by",
           press: "Publication",
           announcement: "Source",
         },
         placeholderWhen: {
           award: "Who gave the award",
           invitation: "Who is hosting the event",
+          lecture: "Who is hosting the lecture",
           press: "BusinessDay",
           announcement: "",
         },
@@ -282,6 +286,7 @@ export const CONTENT_TYPES: ContentType[] = [
         labelWhen: {
           award: "Link (optional)",
           invitation: "Link to the event page",
+          lecture: "Link to the registration or event page",
           press: "Link to the original article",
           announcement: "Link (optional)",
         },

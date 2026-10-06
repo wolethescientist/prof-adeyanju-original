@@ -119,10 +119,10 @@ export type AwardRecipient = (typeof AWARD_RECIPIENTS)[number];
 
 /**
  * What a news item is about. Plain words, because the media team picks one
- * every time they post: an award, an invitation or lecture, coverage in the
+ * every time they post: an award, an invitation, an inaugural lecture, coverage in the
  * press, or anything else worth announcing.
  */
-export const NEWS_CATEGORIES = ["award", "invitation", "press", "announcement"] as const;
+export const NEWS_CATEGORIES = ["award", "invitation", "lecture", "press", "announcement"] as const;
 export type NewsCategory = (typeof NEWS_CATEGORIES)[number];
 
 /**

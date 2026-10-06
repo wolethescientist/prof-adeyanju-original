@@ -17,7 +17,8 @@ this?*
 | Kind | Use it for |
 |---|---|
 | Award | An award given to Prof. Adeyanju or to Galaxy Backbone |
-| Invitation or lecture | Invited, selected or appointed to speak, lecture or take part |
+| Invitation | Invited, selected or appointed to speak or take part in an event |
+| Inaugural lecture | The inaugural lecture: the announcement and news about it |
 | In the press | An article or interview about him |
 | Other news | Anything else worth announcing |
 
